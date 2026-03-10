@@ -1,0 +1,17 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build
+target/
+dist/
+node_modules/
+
+# Logs
+*.log
+
+# Local config
+.env
+.env.local
+*.local
