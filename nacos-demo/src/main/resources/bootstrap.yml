@@ -1,0 +1,11 @@
+# Bootstrap 配置 - Nacos 需在应用启动早期加载
+# 本地覆盖：复制 bootstrap-example.yml 为 bootstrap-local.yml 可覆盖 Nacos 地址
+spring:
+  application:
+    name: nacos-demo
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848

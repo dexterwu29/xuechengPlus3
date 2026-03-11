@@ -1,0 +1,27 @@
+# Nacos Demo 基础配置
+# 本地覆盖：复制 application-example.yml 为 application-local.yml 并填入你的 Nacos 地址
+spring:
+  application:
+    name: nacos-demo
+  profiles:
+    active: local
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848
+        group: DEFAULT_GROUP
+        file-extension: yaml
+  config:
+    import:
+      - optional:nacos:nacos-demo.yaml?group=DEFAULT_GROUP
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

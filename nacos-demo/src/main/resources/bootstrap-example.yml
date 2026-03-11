@@ -1,0 +1,25 @@
+# ============================================================
+# Bootstrap 本地配置模板 - 复制本文件为 bootstrap-local.yml 并填入你的信息
+#
+# 复制命令:
+#   Windows: copy bootstrap-example.yml bootstrap-local.yml
+#   Linux/Mac: cp bootstrap-example.yml bootstrap-local.yml
+#
+# 注意: bootstrap-local.yml 已被 .gitignore 排除
+#
+# 说明: Bootstrap 在应用启动最早阶段加载，用于在 Spring 上下文初始化前连接 Nacos。
+# 若 application-local.yml 已配置 Nacos 地址，bootstrap-local 可与其保持一致，
+# 确保服务发现与配置中心在启动早期即可使用。
+# ============================================================
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: <你的Nacos服务器IP>:8848
+        username: nacos
+        password: <你的Nacos密码>
+      config:
+        server-addr: <你的Nacos服务器IP>:8848
+        username: nacos
+        password: <你的Nacos密码>

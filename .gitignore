@@ -11,7 +11,13 @@ node_modules/
 # Logs
 *.log
 
-# Local config
+# Local config（不提交到 Git）
 .env
 .env.local
+.env.*.local
 *.local
+*-local.yml
+*-local.yaml
+*-local.properties
+application-local.*
+bootstrap-local.*

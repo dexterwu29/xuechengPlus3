@@ -1,0 +1,28 @@
+# ============================================================
+# 本地配置模板 - 复制本文件为 application-local.yml 并填入你的信息
+#
+# 复制命令:
+#   Windows: copy application-example.yml application-local.yml
+#   Linux/Mac: cp application-example.yml application-local.yml
+#
+# 注意: application-local.yml 已被 .gitignore 排除，不会提交到 Git
+# ============================================================
+
+spring:
+  cloud:
+    nacos:
+      # ---------- 服务发现 ----------
+      discovery:
+        # Nacos 服务器地址，格式: IP或域名:端口
+        # 示例: 192.168.1.100:8848  或  你的腾讯云公网IP:8848
+        server-addr: <你的Nacos服务器IP>:8848
+        # Nacos 若开启鉴权，必须填写（2.x 默认开启）；若未开启鉴权，可删除 username/password
+        username: nacos
+        password: <你的Nacos密码>
+      # ---------- 配置中心 ----------
+      config:
+        # 与 discovery 保持一致
+        server-addr: <你的Nacos服务器IP>:8848
+        # 鉴权信息，与 discovery 保持一致
+        username: nacos
+        password: <你的Nacos密码>
