@@ -1,0 +1,83 @@
+# 学成在线三代 - 开发环境一键部署
+# 与【作者版】文档保持一致：容器名、数据目录、版本、端口
+# 使用前：1) 复制 .env.example 为 .env 并填入密码  2) 执行前置步骤（见文档）
+
+services:
+  xcplus3-mysql:
+    image: mysql:8.0.29
+    container_name: xcplus3-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4
+    ports:
+      - "3306:3306"
+    volumes:
+      - /data/docker/mysql:/var/lib/mysql
+
+  xcplus3-redis:
+    image: redis:7.2-alpine
+    container_name: xcplus3-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data/docker/redis:/data
+
+  xcplus3-minio:
+    image: minio/minio:latest
+    container_name: xcplus3-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - /data/docker/minio:/data
+
+  xcplus3-rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: xcplus3-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - /data/docker/rabbitmq:/var/lib/rabbitmq
+
+  xcplus3-elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: xcplus3-elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - /data/docker/elasticsearch:/usr/share/elasticsearch/data
+    user: "1000:1000"
+
+  xcplus3-nacos:
+    image: nacos/nacos-server:v2.4.0
+    container_name: xcplus3-nacos
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "true"
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN}
+      NACOS_AUTH_IDENTITY_KEY: serverIdentity
+      NACOS_AUTH_IDENTITY_VALUE: security
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
