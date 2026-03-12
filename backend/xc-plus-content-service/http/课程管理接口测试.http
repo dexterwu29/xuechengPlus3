@@ -1,0 +1,568 @@
+### 学成在线 - 课程管理模块 HTTP 测试
+### 使用方式：IntelliJ IDEA 打开本文件，点击 "Run all requests" 一键执行全部用例
+### VS Code：安装 REST Client 扩展，可逐条发送或使用脚本批量执行
+### 前置：服务运行于 http://localhost:11001，数据库已执行 xcplus_content.sql
+### 一键自动化：cd http && python run-tests.py
+
+@baseUrl = http://localhost:11001/content
+@companyId = 1
+@companyId2 = 2
+### 机构归属：课程1-15属机构1，课程16-22属机构2
+
+###############################################################################
+# 一、课程分类
+###############################################################################
+
+### 1.1 获取分类树（成功，无需 X-Company-Id）
+GET {{baseUrl}}/course-categories/tree
+
+###############################################################################
+# 二、课程管理 - 分页查询
+###############################################################################
+
+### 2.1 分页-无条件（成功）
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pageNo": 1,
+  "pageSize": 10
+}
+
+### 2.2 分页-按名称（成功）
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pageNo": 1,
+  "pageSize": 10,
+  "courseName": "Java"
+}
+
+### 2.3 分页-按审核状态（成功）
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pageNo": 1,
+  "pageSize": 10,
+  "auditStatus": "202004"
+}
+
+### 2.4 分页-按发布状态且 pageSize=2（验证分页生效）
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pageNo": 1,
+  "pageSize": 2,
+  "publishStatus": "203002"
+}
+
+### 2.5 分页-组合条件（成功）
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pageNo": 1,
+  "pageSize": 5,
+  "courseName": "AI",
+  "auditStatus": "202004",
+  "publishStatus": "203002"
+}
+
+### 2.6 分页-GET 方式
+GET {{baseUrl}}/courses?pageNo=1&pageSize=10
+X-Company-Id: {{companyId}}
+
+###############################################################################
+# 三、课程 CRUD
+###############################################################################
+
+### 3.1 新增课程（成功）
+POST {{baseUrl}}/courses
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "name": "接口测试新增课程",
+  "users": "测试学员",
+  "tags": "测试,接口",
+  "mt": "1-001-001",
+  "st": "1-001-001",
+  "grade": "204001",
+  "teachMode": "200001",
+  "description": "用于接口测试的课程",
+  "pic": null
+}
+
+### 3.2 新增课程-失败-名称为空
+POST {{baseUrl}}/courses
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "name": "",
+  "users": "测试学员",
+  "tags": "测试",
+  "mt": "1-001-001",
+  "st": "1-001-001",
+  "grade": "204001",
+  "teachMode": "200001",
+  "description": "名称为空应失败",
+  "pic": null
+}
+
+### 3.3 新增课程-失败-必填缺失
+POST {{baseUrl}}/courses
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "users": "测试学员",
+  "tags": "测试",
+  "mt": "1-001-001",
+  "st": "1-001-001",
+  "grade": "204001",
+  "teachMode": "200001"
+}
+
+### 3.4 获取课程详情（成功）
+GET {{baseUrl}}/courses/1
+X-Company-Id: {{companyId}}
+
+### 3.5 获取课程详情-失败-不存在
+GET {{baseUrl}}/courses/99999
+X-Company-Id: {{companyId}}
+
+### 3.6 获取课程详情-失败-越权（课程16属机构2）
+GET {{baseUrl}}/courses/16
+X-Company-Id: 1
+
+### 3.7 更新课程（成功）
+PUT {{baseUrl}}/courses/1
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "name": "Java核心技术从入门到精通（已更新）",
+  "users": "零基础学员、转行开发者",
+  "tags": "Java,后端,Spring",
+  "mt": "1-001-001",
+  "st": "1-001-001",
+  "grade": "204001",
+  "teachMode": "200001",
+  "description": "更新后的课程介绍",
+  "pic": null
+}
+
+### 3.8 更新课程-失败-名称为空
+PUT {{baseUrl}}/courses/1
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "name": "",
+  "users": "测试",
+  "tags": "测试",
+  "mt": "1-001-001",
+  "st": "1-001-001",
+  "grade": "204001",
+  "teachMode": "200001"
+}
+
+### 3.9 删除课程（成功，建议用机构2的课程22）
+DELETE {{baseUrl}}/courses/22
+X-Company-Id: 2
+
+### 3.10 删除课程-失败-越权
+DELETE {{baseUrl}}/courses/1
+X-Company-Id: 2
+
+###############################################################################
+# 四、教学计划
+###############################################################################
+
+### 4.1 获取教学计划树（成功）
+GET {{baseUrl}}/courses/1/teachplans
+X-Company-Id: {{companyId}}
+
+### 4.2 新增教学计划-章（成功）
+POST {{baseUrl}}/courses/1/teachplans
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pname": "第4章 新增测试章",
+  "parentId": 0,
+  "grade": 1,
+  "mediaType": null,
+  "orderBy": 4,
+  "isPreviewEnabled": "0"
+}
+
+### 4.3 新增教学计划-节（成功）
+POST {{baseUrl}}/courses/1/teachplans
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pname": "1.4 新增测试节",
+  "parentId": 1,
+  "grade": 2,
+  "mediaType": "001002",
+  "orderBy": 4,
+  "isPreviewEnabled": "0"
+}
+
+### 4.4 新增教学计划-失败-pname为空
+POST {{baseUrl}}/courses/1/teachplans
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pname": "",
+  "parentId": 0,
+  "grade": 1,
+  "orderBy": 1,
+  "isPreviewEnabled": "0"
+}
+
+###############################################################################
+# 五、课程营销
+###############################################################################
+
+### 5.1 获取营销（成功）
+GET {{baseUrl}}/courses/1/market
+X-Company-Id: {{companyId}}
+
+### 5.2 保存营销-收费（成功）
+PUT {{baseUrl}}/courses/1/market
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "charge": "201001",
+  "price": 199.00,
+  "originalPrice": 299.00,
+  "qq": "123456",
+  "wechat": "wxid_test",
+  "phone": "13800138000",
+  "validDays": 365
+}
+
+### 5.3 保存营销-免费（成功）
+PUT {{baseUrl}}/courses/1/market
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "charge": "201000",
+  "price": 0.00,
+  "originalPrice": 0.00,
+  "qq": null,
+  "wechat": null,
+  "phone": null,
+  "validDays": 365
+}
+
+### 5.4 保存营销-失败-价格非法
+PUT {{baseUrl}}/courses/1/market
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "charge": "201001",
+  "price": -100,
+  "originalPrice": 299.00,
+  "validDays": 365
+}
+
+###############################################################################
+# 六、教学计划修改/删除/上移/下移
+###############################################################################
+
+### 6.1 修改教学计划（成功）
+PUT {{baseUrl}}/teachplans/1
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "pname": "第1章 Java基础（已修改）",
+  "parentId": 0,
+  "grade": 1,
+  "mediaType": null,
+  "orderBy": 1,
+  "isPreviewEnabled": "0"
+}
+
+### 6.2 删除教学计划（成功，建议先新增再删）
+DELETE {{baseUrl}}/teachplans/8
+X-Company-Id: {{companyId}}
+
+### 6.3 上移（成功）
+POST {{baseUrl}}/teachplans/5/move-up
+X-Company-Id: {{companyId}}
+
+### 6.4 下移（成功）
+POST {{baseUrl}}/teachplans/1/move-down
+X-Company-Id: {{companyId}}
+
+###############################################################################
+# 七、媒资绑定
+###############################################################################
+
+### 7.1 绑定媒资（成功）
+POST {{baseUrl}}/teachplans/4/media
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "mediaId": "3a5a861d1c745d05166132c47b44f9e4",
+  "mediaFileName": "01-Nacos配置管理.avi"
+}
+
+### 7.2 绑定媒资-失败-mediaId为空
+POST {{baseUrl}}/teachplans/4/media
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "mediaId": "",
+  "mediaFileName": "test.avi"
+}
+
+### 7.3 解绑媒资（成功）
+DELETE {{baseUrl}}/teachplans/4/media
+X-Company-Id: {{companyId}}
+
+###############################################################################
+# 八、师资管理
+###############################################################################
+
+### 8.1 获取教师列表（成功）
+GET {{baseUrl}}/courses/1/teachers
+X-Company-Id: {{companyId}}
+
+### 8.2 获取单个教师（成功）
+GET {{baseUrl}}/courses/1/teachers/1
+X-Company-Id: {{companyId}}
+
+### 8.3 新增教师（成功）
+POST {{baseUrl}}/courses/1/teachers
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "teacherName": "测试讲师",
+  "position": "初级讲师",
+  "description": "接口测试新增教师",
+  "photograph": null
+}
+
+### 8.4 新增教师-失败-teacherName为空
+POST {{baseUrl}}/courses/1/teachers
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "teacherName": "",
+  "position": "讲师",
+  "description": "名称为空应失败",
+  "photograph": null
+}
+
+### 8.5 修改教师（成功）
+PUT {{baseUrl}}/courses/1/teachers/1
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+
+{
+  "teacherName": "张老师（已更新）",
+  "position": "高级讲师",
+  "description": "10年Java开发经验，已更新简介",
+  "photograph": null
+}
+
+### 8.6 删除教师（成功）
+DELETE {{baseUrl}}/courses/1/teachers/2
+X-Company-Id: {{companyId}}
+
+###############################################################################
+# 九、完整流程（与 run-tests.py 一致，按顺序执行）
+# 流程：列表→查id→新增→更新→再查id→删除→再列表 + 各模块越权
+# 说明：9.4/9.14/9.29 新增后需将返回的 id 手动替换下方 {{newId}}/{{newTid}}/{{newPid}}
+# 一键自动化：python run-tests.py（无需手动替换）
+###############################################################################
+
+### 9.1 分类树
+GET {{baseUrl}}/course-categories/tree
+
+### 9.2 课程-列表
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"pageNo":1,"pageSize":5}
+
+### 9.3 课程-查id1
+GET {{baseUrl}}/courses/1
+X-Company-Id: {{companyId}}
+
+### 9.4 课程-新增（记下返回的 id 用于后续更新/删除）
+POST {{baseUrl}}/courses
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"name":"流程测试课程","users":"测试","tags":"测试","mt":"1-001-001","st":"1-001-001","grade":"204001","teachMode":"200001","description":"流程测试"}
+
+### 9.5 课程-更新（将上一步返回的 id 替换下方 /courses/{{newId}}）
+PUT {{baseUrl}}/courses/{{newId}}
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"name":"流程测试课程-已更新","users":"测试","tags":"测试","mt":"1-001-001","st":"1-001-001","grade":"204001","teachMode":"200001","description":"已更新"}
+
+### 9.6 课程-再查id
+GET {{baseUrl}}/courses/{{newId}}
+X-Company-Id: {{companyId}}
+
+### 9.7 课程-删除
+DELETE {{baseUrl}}/courses/{{newId}}
+X-Company-Id: {{companyId}}
+
+### 9.8 课程-再列表
+POST {{baseUrl}}/courses/page
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"pageNo":1,"pageSize":5}
+
+### 9.9 越权-课程-查16用机构1（期望 403/404）
+GET {{baseUrl}}/courses/16
+X-Company-Id: 1
+
+### 9.10 越权-课程-改1用机构2（期望 403）
+PUT {{baseUrl}}/courses/1
+Content-Type: application/json
+X-Company-Id: 2
+{"name":"越权测试","users":"x","tags":"x","mt":"1-001-001","st":"1-001-001","grade":"204001","teachMode":"200001"}
+
+### 9.11 越权-课程-删1用机构2（期望 403）
+DELETE {{baseUrl}}/courses/1
+X-Company-Id: 2
+
+### 9.12 师资-列表
+GET {{baseUrl}}/courses/1/teachers
+X-Company-Id: {{companyId}}
+
+### 9.13 师资-查id1
+GET {{baseUrl}}/courses/1/teachers/1
+X-Company-Id: {{companyId}}
+
+### 9.14 师资-新增
+POST {{baseUrl}}/courses/1/teachers
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"teacherName":"流程测试讲师","position":"初级","description":"流程测试"}
+
+### 9.15 师资-更新（将返回 id 替换下方 teachers/{{newTid}}）
+PUT {{baseUrl}}/courses/1/teachers/{{newTid}}
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"teacherName":"流程测试讲师-已更新","position":"中级","description":"已更新"}
+
+### 9.16 师资-再查id
+GET {{baseUrl}}/courses/1/teachers/{{newTid}}
+X-Company-Id: {{companyId}}
+
+### 9.17 师资-删除
+DELETE {{baseUrl}}/courses/1/teachers/{{newTid}}
+X-Company-Id: {{companyId}}
+
+### 9.18 师资-再列表
+GET {{baseUrl}}/courses/1/teachers
+X-Company-Id: {{companyId}}
+
+### 9.19 越权-师资-列表16用机构1（期望 403）
+GET {{baseUrl}}/courses/16/teachers
+X-Company-Id: 1
+
+### 9.20 越权-师资-新增16用机构1（期望 403）
+POST {{baseUrl}}/courses/16/teachers
+Content-Type: application/json
+X-Company-Id: 1
+{"teacherName":"越权","position":"x","description":"x"}
+
+### 9.21 越权-师资-改17用机构1（期望 403）
+PUT {{baseUrl}}/courses/16/teachers/17
+Content-Type: application/json
+X-Company-Id: 1
+{"teacherName":"越权","position":"x","description":"x"}
+
+### 9.22 越权-师资-删17用机构1（期望 403）
+DELETE {{baseUrl}}/courses/16/teachers/17
+X-Company-Id: 1
+
+### 9.23 营销-查
+GET {{baseUrl}}/courses/1/market
+X-Company-Id: {{companyId}}
+
+### 9.24 营销-保存
+PUT {{baseUrl}}/courses/1/market
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"charge":"201001","price":188,"originalPrice":288,"validDays":365}
+
+### 9.25 营销-再查
+GET {{baseUrl}}/courses/1/market
+X-Company-Id: {{companyId}}
+
+### 9.26 越权-营销-查16用机构1（期望 403）
+GET {{baseUrl}}/courses/16/market
+X-Company-Id: 1
+
+### 9.27 越权-营销-保存16用机构1（期望 403）
+PUT {{baseUrl}}/courses/16/market
+Content-Type: application/json
+X-Company-Id: 1
+{"charge":"201001","price":1,"originalPrice":1,"validDays":30}
+
+### 9.28 计划-树
+GET {{baseUrl}}/courses/1/teachplans
+X-Company-Id: {{companyId}}
+
+### 9.29 计划-新增
+POST {{baseUrl}}/courses/1/teachplans
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"pname":"流程测试章","parentId":0,"grade":1,"orderBy":99,"isPreviewEnabled":"0"}
+
+### 9.30 计划-修改（将返回 id 替换下方 teachplans/{{newPid}}）
+PUT {{baseUrl}}/teachplans/{{newPid}}
+Content-Type: application/json
+X-Company-Id: {{companyId}}
+{"pname":"流程测试章-已修改","parentId":0,"grade":1,"orderBy":99,"isPreviewEnabled":"0"}
+
+### 9.31 计划-再树
+GET {{baseUrl}}/courses/1/teachplans
+X-Company-Id: {{companyId}}
+
+### 9.32 计划-删除
+DELETE {{baseUrl}}/teachplans/{{newPid}}
+X-Company-Id: {{companyId}}
+
+### 9.33 计划-再树
+GET {{baseUrl}}/courses/1/teachplans
+X-Company-Id: {{companyId}}
+
+### 9.34 越权-计划-树16用机构1（期望 403）
+GET {{baseUrl}}/courses/16/teachplans
+X-Company-Id: 1
+
+### 9.35 越权-计划-新增16用机构1（期望 403）
+POST {{baseUrl}}/courses/16/teachplans
+Content-Type: application/json
+X-Company-Id: 1
+{"pname":"越权章","parentId":0,"grade":1,"orderBy":1,"isPreviewEnabled":"0"}

@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -55,7 +56,7 @@ public class CourseBaseServiceImpl implements CourseBaseService {
                 wrapper.eq(CourseBase::getAuditStatus, queryDTO.getAuditStatus());
             }
             if (StringUtils.hasText(queryDTO.getPublishStatus())) {
-                wrapper.eq(CourseBase::getStatus, queryDTO.getPublishStatus());
+                wrapper.eq(CourseBase::getPublishStatus, queryDTO.getPublishStatus());
             }
         }
 
@@ -77,8 +78,13 @@ public class CourseBaseServiceImpl implements CourseBaseService {
         BeanUtils.copyProperties(dto, entity);
         entity.setCompanyId(companyId);
         entity.setAuditStatus("202002");
-        entity.setStatus("203001");
+        entity.setPublishStatus("203001");
         entity.setIsDeleted(0);
+        LocalDateTime now = LocalDateTime.now();
+        entity.setCreateTime(now);
+        entity.setUpdateTime(now);
+        entity.setCreateBy(String.valueOf(companyId));
+        entity.setUpdateBy(String.valueOf(companyId));
         courseBaseMapper.insert(entity);
         return entity.getId();
     }
@@ -116,6 +122,8 @@ public class CourseBaseServiceImpl implements CourseBaseService {
         CourseBase entity = new CourseBase();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(id);
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setUpdateBy(String.valueOf(CompanyContext.getCompanyId()));
         courseBaseMapper.updateById(entity);
     }
 
@@ -125,11 +133,17 @@ public class CourseBaseServiceImpl implements CourseBaseService {
         ensureCompanyOwns(id);
         courseBaseMapper.deleteById(id);
         courseMarketMapper.delete(new LambdaQueryWrapper<CourseMarket>().eq(CourseMarket::getId, id));
+        LocalDateTime now = LocalDateTime.now();
+        String by = String.valueOf(CompanyContext.getCompanyId());
         courseTeacherMapper.update(null, new LambdaUpdateWrapper<CourseTeacher>()
                 .set(CourseTeacher::getIsDeleted, 1)
+                .set(CourseTeacher::getUpdateTime, now)
+                .set(CourseTeacher::getUpdateBy, by)
                 .eq(CourseTeacher::getCourseId, id));
         teachplanMapper.update(null, new LambdaUpdateWrapper<Teachplan>()
                 .set(Teachplan::getIsDeleted, 1)
+                .set(Teachplan::getUpdateTime, now)
+                .set(Teachplan::getUpdateBy, by)
                 .eq(Teachplan::getCourseId, id));
     }
 

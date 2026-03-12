@@ -43,7 +43,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 ### 2.4 验证
 
 - 健康检查：`http://localhost:11001/content/actuator/health`
-- Swagger UI：`http://localhost:11001/content/swagger-ui.html`
+- Knife4j 文档：`http://localhost:11001/content/doc.html`
 - OpenAPI 文档：`http://localhost:11001/content/v3/api-docs`
 
 ## 三、接口调用说明
@@ -86,10 +86,32 @@ X-Company-Id: 2
 
 ## 四、Knife4j / Swagger 测试
 
-1. 打开 `http://localhost:11001/content/swagger-ui.html`
-2. 在请求头中添加 `X-Company-Id: 1`
-3. 依次测试各接口
+### 4.1 接口文档访问排查
+
+**访问失败原因与排查：**
+
+- **现象**：访问 `http://localhost:11001/content/doc.html` 返回 403 或 404
+- **原因**：机构隔离拦截器（`CompanyInterceptor`）对 `/courses/**`、`/teachplans/**` 等路径生效，若配置不当可能误拦截 `/doc.html`、`/v3/api-docs` 等文档路径
+- **解决**：采用**白名单**策略，仅对业务 API 生效，文档路径放行：
+  - `WebMvcConfig` 中 `addPathPatterns("/courses/**", "/teachplans/**")`，不包含 `/doc.html`、`/v3/api-docs`、`/swagger-ui/**`
+  - 对 `GlobalExceptionHandler` 使用 `@Hidden` 或排除，避免 SpringDoc 扫描异常类导致文档生成失败
+
+**访问成功条件：**
+
+- 服务启动后，`/content/doc.html`、`/content/v3/api-docs` 未被拦截器拦截
+- Knife4j 与 SpringDoc 正确集成，`knife4j.enable: true` 已配置
+
+### 4.2 接口测试文档
+
+- [12-课程管理模块-接口测试用例](../../docs/12-课程管理模块-接口测试用例.md)：每个接口的 JSON 请求示例、成功/失败用例、curl 命令，可直接复制粘贴测试
+
+### 4.3 一键 HTTP 测试
+
+| 方式 | 说明 |
+|------|------|
+| **IDEA HTTP Client** | 打开 `http/课程管理接口测试.http`，点击 **Run all requests** 一键执行全部用例，结果在 Run 窗口查看 |
+| **Python 自动化脚本** | `cd http && python run-tests.py`，结果保存到 `http/results/YYYYMMDD-HHMMSS/*.json`，可逐文件查看。详见项目根目录 README 的「自动化脚本」章节 |
 
 ## 五、参考文档
 
-- [课程管理模块-开发接口文档](../../docs/课程管理模块-开发接口文档.md)
+- [课程管理模块-开发接口文档](../../docs/11-课程管理模块-开发接口文档.md)

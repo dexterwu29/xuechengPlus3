@@ -14,16 +14,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final CompanyInterceptor companyInterceptor;
 
+    /**
+     * 机构隔离拦截器：仅对业务 API 生效（白名单），Knife4j/doc.html/v3/api-docs 等自动放行
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(companyInterceptor)
-                .addPathPatterns("/**")
-                .excludePathPatterns(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/actuator/**",
-                        "/course-categories/**"
-                );
+                .addPathPatterns("/courses/**", "/teachplans/**");
     }
 }

@@ -17,6 +17,11 @@ spring:
   config:
     import:
       - optional:nacos:xc-plus-content-service.yaml?group=DEFAULT_GROUP
+  jackson:
+    date-format: "yyyy-MM-dd'T'HH:mm:ss"
+    time-zone: "Asia/Shanghai"
+    serialization:
+      write-dates-as-timestamps: false
 
 server:
   port: 11001
@@ -40,7 +45,7 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# SpringDoc OpenAPI (路径相对于 context-path /content，完整URL: /content/v3/api-docs, /content/swagger-ui.html)
+# Knife4j + SpringDoc（doc.html 访问：http://localhost:11001/content/doc.html）
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -48,3 +53,7 @@ springdoc:
     path: /swagger-ui.html
     tags-sorter: alpha
     operations-sorter: alpha
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn

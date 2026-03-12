@@ -34,7 +34,8 @@ public class CourseBase {
     private String createBy;
     private String updateBy;
     private String auditStatus;
-    private String status;
+    @TableField("publish_status")
+    private String publishStatus;
     @TableLogic
     private Integer isDeleted;
 }

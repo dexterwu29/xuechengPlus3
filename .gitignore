@@ -11,6 +11,9 @@ node_modules/
 # Logs
 *.log
 
+# HTTP 测试结果（每次运行生成，不纳入版本管理）
+**/http/results/
+
 # Local config（不提交到 Git）
 .env
 .env.local

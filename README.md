@@ -41,6 +41,39 @@ xcplus3/
 3. 启动后端：`cd backend && mvn spring-boot:run`（各微服务）
 4. 启动前端：`cd frontend && npm install && npm run dev`
 
+## 自动化脚本
+
+### 课程管理接口一键测试（run-tests.py）
+
+课程管理微服务提供 Python 自动化测试脚本，覆盖完整 CRUD 流程、越权防护、分页、审计字段等用例。
+
+**前置条件：**
+
+- 课程管理服务已启动（`xc-plus-content-service`，端口 11001）
+- Python 3.x
+
+**用法：**
+
+```bash
+cd xc-plus3/backend/xc-plus-content-service/http
+python run-tests.py
+```
+
+**可选参数：**
+
+- 指定结果目录：`python run-tests.py ./my-results`
+- 自定义 BASE_URL：`BASE_URL=http://localhost:11001/content python run-tests.py`
+
+**输出：**
+
+- 结果保存到 `http/results/YYYYMMDD-HHMMSS/*.json`，可逐文件查看
+- 终端输出测试结果分析（正常流程通过数、越权防护通过数等）
+
+**测试范围：**
+
+- 分类树、课程 CRUD、师资、营销、教学计划、媒资关联
+- 分页、失败用例、越权防护、审计字段（create_by/update_by）
+
 ## 相关仓库
 
 - 二代后端：https://github.com/dexterwu29/xuechengPlus2

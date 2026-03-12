@@ -16,6 +16,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * 课程计划媒资服务实现
  */
@@ -35,12 +37,17 @@ public class TeachplanMediaServiceImpl implements TeachplanMediaService {
             throw new BusinessException(404, "课程计划不存在");
         }
         ensureCompanyOwns(plan.getCourseId());
+        Long companyId = CompanyContext.getCompanyId();
+        LocalDateTime now = LocalDateTime.now();
+        String by = String.valueOf(companyId);
 
         TeachplanMedia existing = teachplanMediaMapper.selectOne(
                 new LambdaQueryWrapper<TeachplanMedia>().eq(TeachplanMedia::getTeachplanId, teachplanId)
         );
         if (existing != null) {
             BeanUtils.copyProperties(dto, existing);
+            existing.setUpdateTime(now);
+            existing.setUpdateBy(by);
             teachplanMediaMapper.updateById(existing);
         } else {
             TeachplanMedia entity = new TeachplanMedia();
@@ -48,6 +55,10 @@ public class TeachplanMediaServiceImpl implements TeachplanMediaService {
             entity.setTeachplanId(teachplanId);
             entity.setCourseId(plan.getCourseId());
             entity.setIsDeleted(0);
+            entity.setCreateTime(now);
+            entity.setUpdateTime(now);
+            entity.setCreateBy(by);
+            entity.setUpdateBy(by);
             teachplanMediaMapper.insert(entity);
         }
     }

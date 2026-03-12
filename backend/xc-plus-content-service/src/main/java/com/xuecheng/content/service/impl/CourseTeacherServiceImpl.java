@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -53,10 +54,16 @@ public class CourseTeacherServiceImpl implements CourseTeacherService {
     @Override
     public Long create(Long courseId, CourseTeacherDTO dto) {
         ensureCompanyOwns(courseId);
+        Long companyId = CompanyContext.getCompanyId();
         CourseTeacher entity = new CourseTeacher();
         BeanUtils.copyProperties(dto, entity);
         entity.setCourseId(courseId);
         entity.setIsDeleted(0);
+        LocalDateTime now = LocalDateTime.now();
+        entity.setCreateTime(now);
+        entity.setUpdateTime(now);
+        entity.setCreateBy(String.valueOf(companyId));
+        entity.setUpdateBy(String.valueOf(companyId));
         courseTeacherMapper.insert(entity);
         return entity.getId();
     }
@@ -75,6 +82,8 @@ public class CourseTeacherServiceImpl implements CourseTeacherService {
         CourseTeacher entity = new CourseTeacher();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(teacherId);
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setUpdateBy(String.valueOf(CompanyContext.getCompanyId()));
         courseTeacherMapper.updateById(entity);
     }
 

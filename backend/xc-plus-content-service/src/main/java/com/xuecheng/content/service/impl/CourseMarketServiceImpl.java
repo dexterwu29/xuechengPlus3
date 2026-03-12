@@ -14,6 +14,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * 课程营销服务实现
  */
@@ -41,14 +43,22 @@ public class CourseMarketServiceImpl implements CourseMarketService {
     public void save(Long courseId, CourseMarketDTO dto) {
         ensureCompanyOwns(courseId);
         CourseMarket entity = courseMarketMapper.selectById(courseId);
+        Long companyId = CompanyContext.getCompanyId();
         if (entity == null) {
             entity = new CourseMarket();
             entity.setId(courseId);
             entity.setIsDeleted(0);
             BeanUtils.copyProperties(dto, entity);
+            LocalDateTime now = LocalDateTime.now();
+            entity.setCreateTime(now);
+            entity.setUpdateTime(now);
+            entity.setCreateBy(String.valueOf(companyId));
+            entity.setUpdateBy(String.valueOf(companyId));
             courseMarketMapper.insert(entity);
         } else {
             BeanUtils.copyProperties(dto, entity);
+            entity.setUpdateTime(LocalDateTime.now());
+            entity.setUpdateBy(String.valueOf(companyId));
             courseMarketMapper.updateById(entity);
         }
     }

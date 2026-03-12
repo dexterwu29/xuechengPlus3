@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,6 +61,7 @@ public class TeachplanServiceImpl implements TeachplanService {
             throw new BusinessException(400, "courseId不能为空");
         }
         ensureCompanyOwns(courseId);
+        Long companyId = CompanyContext.getCompanyId();
 
         Long parentId = dto.getParentId() != null ? dto.getParentId() : 0L;
         int grade = parentId == 0 ? 1 : 2;
@@ -74,6 +76,11 @@ public class TeachplanServiceImpl implements TeachplanService {
         entity.setOrderBy(orderBy);
         entity.setStatus(1);
         entity.setIsDeleted(0);
+        LocalDateTime now = LocalDateTime.now();
+        entity.setCreateTime(now);
+        entity.setUpdateTime(now);
+        entity.setCreateBy(String.valueOf(companyId));
+        entity.setUpdateBy(String.valueOf(companyId));
         teachplanMapper.insert(entity);
         return entity.getId();
     }
@@ -88,6 +95,8 @@ public class TeachplanServiceImpl implements TeachplanService {
         Teachplan entity = new Teachplan();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(id);
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setUpdateBy(String.valueOf(CompanyContext.getCompanyId()));
         teachplanMapper.updateById(entity);
     }
 
@@ -133,8 +142,10 @@ public class TeachplanServiceImpl implements TeachplanService {
 
         int curOrder = current.getOrderBy();
         int sibOrder = sibling.getOrderBy();
-        teachplanMapper.update(null, new LambdaUpdateWrapper<Teachplan>().eq(Teachplan::getId, id).set(Teachplan::getOrderBy, sibOrder));
-        teachplanMapper.update(null, new LambdaUpdateWrapper<Teachplan>().eq(Teachplan::getId, sibling.getId()).set(Teachplan::getOrderBy, curOrder));
+        LocalDateTime now = LocalDateTime.now();
+        String by = String.valueOf(CompanyContext.getCompanyId());
+        teachplanMapper.update(null, new LambdaUpdateWrapper<Teachplan>().eq(Teachplan::getId, id).set(Teachplan::getOrderBy, sibOrder).set(Teachplan::getUpdateTime, now).set(Teachplan::getUpdateBy, by));
+        teachplanMapper.update(null, new LambdaUpdateWrapper<Teachplan>().eq(Teachplan::getId, sibling.getId()).set(Teachplan::getOrderBy, curOrder).set(Teachplan::getUpdateTime, now).set(Teachplan::getUpdateBy, by));
     }
 
     private List<TeachplanTreeVO> buildTree(Long parentId, List<Teachplan> all, Map<Long, TeachplanMediaVO> mediaMap) {

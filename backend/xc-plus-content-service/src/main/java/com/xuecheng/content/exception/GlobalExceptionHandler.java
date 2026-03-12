@@ -1,6 +1,7 @@
 package com.xuecheng.content.exception;
 
 import com.xuecheng.content.common.RestResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,10 +9,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * 全局异常处理
+ * 全局异常处理（仅作用于本模块 Controller）
+ * @Hidden 避免 SpringDoc/Knife4j 扫描时影响文档生成
  */
 @Slf4j
-@RestControllerAdvice
+@Hidden
+@RestControllerAdvice(basePackages = "com.xuecheng.content.controller")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
