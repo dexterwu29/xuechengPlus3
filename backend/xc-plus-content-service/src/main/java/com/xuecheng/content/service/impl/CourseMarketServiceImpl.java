@@ -41,6 +41,7 @@ public class CourseMarketServiceImpl implements CourseMarketService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void save(Long courseId, CourseMarketDTO dto) {
+        validateMarket(dto);
         ensureCompanyOwns(courseId);
         CourseMarket entity = courseMarketMapper.selectById(courseId);
         Long companyId = CompanyContext.getCompanyId();
@@ -60,6 +61,22 @@ public class CourseMarketServiceImpl implements CourseMarketService {
             entity.setUpdateTime(LocalDateTime.now());
             entity.setUpdateBy(String.valueOf(companyId));
             courseMarketMapper.updateById(entity);
+        }
+    }
+
+    private void validateMarket(CourseMarketDTO dto) {
+        if (dto == null) return;
+        if (dto.getCharge() != null && !dto.getCharge().isEmpty()
+                && !"201000".equals(dto.getCharge()) && !"201001".equals(dto.getCharge())) {
+            throw new BusinessException(400, "收费规则必须为201000免费或201001收费");
+        }
+        if ("201001".equals(dto.getCharge())) {
+            if (dto.getPrice() == null || dto.getPrice() <= 0) {
+                throw new BusinessException(400, "收费课程必须填写有效价格且大于0");
+            }
+            if (dto.getValidDays() == null || dto.getValidDays() <= 0) {
+                throw new BusinessException(400, "收费课程必须填写有效期天数且大于0");
+            }
         }
     }
 

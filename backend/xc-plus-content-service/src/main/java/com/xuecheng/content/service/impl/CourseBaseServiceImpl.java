@@ -53,10 +53,22 @@ public class CourseBaseServiceImpl implements CourseBaseService {
                 wrapper.like(CourseBase::getName, queryDTO.getCourseName());
             }
             if (StringUtils.hasText(queryDTO.getAuditStatus())) {
+                if (!queryDTO.getAuditStatus().matches("^(202001|202002|202003|202004)$")) {
+                    throw new BusinessException(400, "审核状态必须为202001/202002/202003/202004");
+                }
                 wrapper.eq(CourseBase::getAuditStatus, queryDTO.getAuditStatus());
             }
             if (StringUtils.hasText(queryDTO.getPublishStatus())) {
+                if (!queryDTO.getPublishStatus().matches("^(203001|203002|203003)$")) {
+                    throw new BusinessException(400, "发布状态必须为203001/203002/203003");
+                }
                 wrapper.eq(CourseBase::getPublishStatus, queryDTO.getPublishStatus());
+            }
+            if (StringUtils.hasText(queryDTO.getMt())) {
+                wrapper.likeRight(CourseBase::getMt, queryDTO.getMt());
+            }
+            if (StringUtils.hasText(queryDTO.getSt())) {
+                wrapper.eq(CourseBase::getSt, queryDTO.getSt());
             }
         }
 
@@ -70,9 +82,14 @@ public class CourseBaseServiceImpl implements CourseBaseService {
         return new PageResult<>(items, result.getTotal(), pageParams.getPageNo(), pageParams.getPageSize());
     }
 
+    private static final int MAX_DESCRIPTION_LEN = 5000;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long create(CourseCreateDTO dto) {
+        if (dto.getDescription() != null && dto.getDescription().length() > MAX_DESCRIPTION_LEN) {
+            throw new BusinessException(400, "课程介绍不能超过5000字符");
+        }
         Long companyId = CompanyContext.getCompanyId();
         CourseBase entity = new CourseBase();
         BeanUtils.copyProperties(dto, entity);
@@ -118,6 +135,9 @@ public class CourseBaseServiceImpl implements CourseBaseService {
 
     @Override
     public void updateById(Long id, CourseUpdateDTO dto) {
+        if (dto.getDescription() != null && dto.getDescription().length() > MAX_DESCRIPTION_LEN) {
+            throw new BusinessException(400, "课程介绍不能超过5000字符");
+        }
         ensureCompanyOwns(id);
         CourseBase entity = new CourseBase();
         BeanUtils.copyProperties(dto, entity);

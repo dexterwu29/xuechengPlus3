@@ -6,6 +6,7 @@ import com.xuecheng.content.model.vo.CourseTeacherVO;
 import com.xuecheng.content.service.CourseTeacherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,14 +39,14 @@ public class CourseTeacherController {
 
     @Operation(summary = "新增教师")
     @PostMapping("/{courseId}/teachers")
-    public RestResponse<Long> createTeacher(@PathVariable Long courseId, @RequestBody CourseTeacherDTO dto) {
+    public RestResponse<Long> createTeacher(@PathVariable Long courseId, @RequestBody @Valid CourseTeacherDTO dto) {
         Long id = courseTeacherService.create(courseId, dto);
         return RestResponse.success(id);
     }
 
     @Operation(summary = "修改教师")
     @PutMapping("/{courseId}/teachers/{teacherId}")
-    public RestResponse<Void> updateTeacher(@PathVariable Long courseId, @PathVariable Long teacherId, @RequestBody CourseTeacherDTO dto) {
+    public RestResponse<Void> updateTeacher(@PathVariable Long courseId, @PathVariable Long teacherId, @RequestBody @Valid CourseTeacherDTO dto) {
         courseTeacherService.update(courseId, teacherId, dto);
         return RestResponse.success();
     }

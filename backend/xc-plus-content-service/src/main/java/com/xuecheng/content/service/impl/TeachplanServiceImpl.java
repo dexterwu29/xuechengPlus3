@@ -65,8 +65,15 @@ public class TeachplanServiceImpl implements TeachplanService {
 
         Long parentId = dto.getParentId() != null ? dto.getParentId() : 0L;
         int grade = parentId == 0 ? 1 : 2;
-        Integer maxOrder = teachplanMapper.selectMaxOrderBy(courseId, parentId);
-        int orderBy = (maxOrder != null ? maxOrder : 0) + 1;
+        int orderBy;
+        if (dto.getOrderBy() != null && dto.getOrderBy() >= 0) {
+            orderBy = dto.getOrderBy();
+            // 插入到指定位置：将 orderBy >= orderBy 的兄弟节点后移
+            teachplanMapper.shiftOrderByFrom(courseId, parentId, orderBy, 1);
+        } else {
+            Integer maxOrder = teachplanMapper.selectMaxOrderBy(courseId, parentId);
+            orderBy = (maxOrder != null ? maxOrder : 0) + 1;
+        }
 
         Teachplan entity = new Teachplan();
         BeanUtils.copyProperties(dto, entity);

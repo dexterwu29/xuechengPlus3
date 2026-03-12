@@ -16,6 +16,8 @@ import com.xuecheng.content.service.TeachplanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/courses")
 @RequiredArgsConstructor
+@Validated
 public class CourseController {
 
     private final CourseBaseService courseBaseService;
@@ -34,13 +37,14 @@ public class CourseController {
 
     @Operation(summary = "分页查询课程")
     @PostMapping("/page")
-    public RestResponse<PageResult<CourseBaseVO>> pageCourses(@RequestBody(required = false) CoursePageQueryDTO body) {
-        if (body == null) body = new CoursePageQueryDTO();
+    public RestResponse<PageResult<CourseBaseVO>> pageCourses(@RequestBody @Valid CoursePageQueryDTO body) {
         PageParams params = new PageParams(body.getPageNo(), body.getPageSize());
         CourseQueryDTO queryDTO = new CourseQueryDTO();
         queryDTO.setCourseName(body.getCourseName());
         queryDTO.setAuditStatus(body.getAuditStatus());
         queryDTO.setPublishStatus(body.getPublishStatus());
+        queryDTO.setMt(body.getMt());
+        queryDTO.setSt(body.getSt());
         PageResult<CourseBaseVO> result = courseBaseService.pageQuery(params, queryDTO);
         return RestResponse.success(result);
     }
@@ -52,19 +56,23 @@ public class CourseController {
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String courseName,
             @RequestParam(required = false) String auditStatus,
-            @RequestParam(required = false) String publishStatus) {
+            @RequestParam(required = false) String publishStatus,
+            @RequestParam(required = false) String mt,
+            @RequestParam(required = false) String st) {
         PageParams params = new PageParams(pageNo, pageSize);
         CourseQueryDTO queryDTO = new CourseQueryDTO();
         queryDTO.setCourseName(courseName);
         queryDTO.setAuditStatus(auditStatus);
         queryDTO.setPublishStatus(publishStatus);
+        queryDTO.setMt(mt);
+        queryDTO.setSt(st);
         PageResult<CourseBaseVO> result = courseBaseService.pageQuery(params, queryDTO);
         return RestResponse.success(result);
     }
 
     @Operation(summary = "新增课程")
     @PostMapping
-    public RestResponse<Long> createCourse(@RequestBody CourseCreateDTO dto) {
+    public RestResponse<Long> createCourse(@RequestBody @Valid CourseCreateDTO dto) {
         Long id = courseBaseService.create(dto);
         return RestResponse.success(id);
     }
@@ -78,7 +86,7 @@ public class CourseController {
 
     @Operation(summary = "更新课程")
     @PutMapping("/{id}")
-    public RestResponse<Void> updateCourse(@PathVariable Long id, @RequestBody CourseUpdateDTO dto) {
+    public RestResponse<Void> updateCourse(@PathVariable Long id, @RequestBody @Valid CourseUpdateDTO dto) {
         courseBaseService.updateById(id, dto);
         return RestResponse.success();
     }
@@ -99,7 +107,7 @@ public class CourseController {
 
     @Operation(summary = "新增教学计划")
     @PostMapping("/{id}/teachplans")
-    public RestResponse<Long> createTeachplan(@PathVariable Long id, @RequestBody TeachplanDTO dto) {
+    public RestResponse<Long> createTeachplan(@PathVariable Long id, @RequestBody @Valid TeachplanDTO dto) {
         dto.setCourseId(id);
         Long planId = teachplanService.create(dto);
         return RestResponse.success(planId);

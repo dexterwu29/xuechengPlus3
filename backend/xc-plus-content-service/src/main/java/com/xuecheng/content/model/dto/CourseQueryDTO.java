@@ -16,4 +16,8 @@ public class CourseQueryDTO {
     private String auditStatus;
     @Schema(description = "发布状态：203001未发布 203002已发布 203003下线")
     private String publishStatus;
+    @Schema(description = "大分类ID，如 1-001")
+    private String mt;
+    @Schema(description = "小分类ID，如 1-001-001")
+    private String st;
 }

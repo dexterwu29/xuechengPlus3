@@ -5,6 +5,7 @@ import com.xuecheng.content.model.dto.CourseMarketDTO;
 import com.xuecheng.content.service.CourseMarketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class CourseMarketController {
 
     @Operation(summary = "保存课程营销信息")
     @PutMapping("/{courseId}/market")
-    public RestResponse<Void> saveMarket(@PathVariable Long courseId, @RequestBody CourseMarketDTO dto) {
+    public RestResponse<Void> saveMarket(@PathVariable Long courseId, @RequestBody @Valid CourseMarketDTO dto) {
         courseMarketService.save(courseId, dto);
         return RestResponse.success();
     }

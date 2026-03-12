@@ -5,6 +5,7 @@ import com.xuecheng.content.model.dto.TeachplanMediaDTO;
 import com.xuecheng.content.service.TeachplanMediaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class TeachplanMediaController {
 
     @Operation(summary = "绑定媒资")
     @PostMapping("/{teachplanId}/media")
-    public RestResponse<Void> bindMedia(@PathVariable Long teachplanId, @RequestBody TeachplanMediaDTO dto) {
+    public RestResponse<Void> bindMedia(@PathVariable Long teachplanId, @RequestBody @Valid TeachplanMediaDTO dto) {
         teachplanMediaService.bind(teachplanId, dto);
         return RestResponse.success();
     }

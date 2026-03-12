@@ -5,6 +5,7 @@ import com.xuecheng.content.model.dto.TeachplanDTO;
 import com.xuecheng.content.service.TeachplanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public class TeachplanController {
 
     @Operation(summary = "修改教学计划")
     @PutMapping("/{id}")
-    public RestResponse<Void> updateTeachplan(@PathVariable Long id, @RequestBody TeachplanDTO dto) {
+    public RestResponse<Void> updateTeachplan(@PathVariable Long id, @RequestBody @Valid TeachplanDTO dto) {
         teachplanService.update(id, dto);
         return RestResponse.success();
     }
