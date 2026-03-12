@@ -1,0 +1,16 @@
+# ============================================================
+# Bootstrap 本地配置模板 - 复制本文件为 bootstrap-local.yml
+# 注意: bootstrap-local.yml 已被 .gitignore 排除
+# ============================================================
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: <你的Nacos服务器IP>:8848
+        username: nacos
+        password: <你的Nacos密码>
+      config:
+        server-addr: <你的Nacos服务器IP>:8848
+        username: nacos
+        password: <你的Nacos密码>

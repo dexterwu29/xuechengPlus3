@@ -1,0 +1,26 @@
+# ============================================================
+# 本地配置模板 - 复制本文件为 application-local.yml 并填入你的信息
+#
+# 复制命令:
+#   Windows: copy application-example.yml application-local.yml
+#   Linux/Mac: cp application-example.yml application-local.yml
+#
+# 注意: application-local.yml 已被 .gitignore 排除
+# ============================================================
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: <你的Nacos服务器IP>:8848
+        username: nacos
+        password: <你的Nacos密码>
+      config:
+        server-addr: <你的Nacos服务器IP>:8848
+        username: nacos
+        password: <你的Nacos密码>
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://<你的MySQL地址>:3306/xcplus_content?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: <你的MySQL用户名>
+    password: <你的MySQL密码>

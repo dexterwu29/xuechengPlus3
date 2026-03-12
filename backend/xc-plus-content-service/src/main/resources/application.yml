@@ -1,0 +1,50 @@
+# 学成在线 - 课程管理内容服务基础配置
+# 本地覆盖：复制 application-example.yml 为 application-local.yml 并填入你的信息
+
+spring:
+  application:
+    name: xc-plus-content-service
+  profiles:
+    active: local
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848
+        group: DEFAULT_GROUP
+        file-extension: yaml
+  config:
+    import:
+      - optional:nacos:xc-plus-content-service.yaml?group=DEFAULT_GROUP
+
+server:
+  port: 11001
+  servlet:
+    context-path: /content
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# MyBatis-Plus
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# SpringDoc OpenAPI (路径相对于 context-path /content，完整URL: /content/v3/api-docs, /content/swagger-ui.html)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
