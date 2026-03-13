@@ -113,10 +113,26 @@ public class CourseController {
         return RestResponse.success(planId);
     }
 
-    @Operation(summary = "课程发布（预留，本阶段不测试）")
+    @Operation(summary = "提交审核（教师，草稿->待审核）")
+    @PostMapping("/{id}/submit")
+    public RestResponse<Void> submitCourse(@PathVariable Long id) {
+        courseBaseService.submit(id);
+        return RestResponse.success();
+    }
+
+    @Operation(summary = "更新课程封面图")
+    @PutMapping("/{id}/pic")
+    public RestResponse<Void> updateCoursePic(
+            @PathVariable Long id,
+            @RequestParam String fileId) {
+        courseBaseService.updatePic(id, fileId);
+        return RestResponse.success();
+    }
+
+    @Operation(summary = "发布课程")
     @PostMapping("/{id}/publish")
     public RestResponse<Void> publishCourse(@PathVariable Long id) {
-        // 预留：后续实现课程发布逻辑
+        courseBaseService.publish(id);
         return RestResponse.success();
     }
 }

@@ -20,6 +20,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(companyInterceptor)
-                .addPathPatterns("/courses/**", "/teachplans/**");
+                .addPathPatterns("/courses/**", "/teachplans/**", "/media/**")
+                .excludePathPatterns("/public/**", "/admin/**");
     }
 }

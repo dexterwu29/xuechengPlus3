@@ -148,6 +148,53 @@ public class CourseBaseServiceImpl implements CourseBaseService {
     }
 
     @Override
+    public void updatePic(Long id, String fileId) {
+        ensureCompanyOwns(id);
+        if (fileId == null || fileId.isBlank()) {
+            throw new BusinessException(400, "fileId不能为空");
+        }
+        courseBaseMapper.update(null, new LambdaUpdateWrapper<CourseBase>()
+                .eq(CourseBase::getId, id)
+                .set(CourseBase::getPic, "media:" + fileId.trim())
+                .set(CourseBase::getUpdateTime, LocalDateTime.now())
+                .set(CourseBase::getUpdateBy, String.valueOf(CompanyContext.getCompanyId())));
+    }
+
+    @Override
+    public void submit(Long id) {
+        ensureCompanyOwns(id);
+        CourseBase base = courseBaseMapper.selectById(id);
+        if (base == null) {
+            throw new BusinessException(404, "课程不存在");
+        }
+        if (!"202002".equals(base.getAuditStatus())) {
+            throw new BusinessException(400, "仅草稿状态可提交审核");
+        }
+        courseBaseMapper.update(null, new LambdaUpdateWrapper<CourseBase>()
+                .eq(CourseBase::getId, id)
+                .set(CourseBase::getAuditStatus, "202003")
+                .set(CourseBase::getUpdateTime, LocalDateTime.now())
+                .set(CourseBase::getUpdateBy, String.valueOf(CompanyContext.getCompanyId())));
+    }
+
+    @Override
+    public void publish(Long id) {
+        ensureCompanyOwns(id);
+        CourseBase base = courseBaseMapper.selectById(id);
+        if (base == null) {
+            throw new BusinessException(404, "课程不存在");
+        }
+        if (!"202004".equals(base.getAuditStatus())) {
+            throw new BusinessException(400, "仅审核通过后可发布");
+        }
+        courseBaseMapper.update(null, new LambdaUpdateWrapper<CourseBase>()
+                .eq(CourseBase::getId, id)
+                .set(CourseBase::getPublishStatus, "203002")
+                .set(CourseBase::getUpdateTime, LocalDateTime.now())
+                .set(CourseBase::getUpdateBy, String.valueOf(CompanyContext.getCompanyId())));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeById(Long id) {
         ensureCompanyOwns(id);

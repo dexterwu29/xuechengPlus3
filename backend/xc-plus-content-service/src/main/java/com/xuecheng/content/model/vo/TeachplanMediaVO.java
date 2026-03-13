@@ -12,12 +12,18 @@ public class TeachplanMediaVO {
 
     @Schema(description = "主键")
     private Long id;
-    @Schema(description = "媒资ID")
+    @Schema(description = "媒资ID（兼容）")
     private String mediaId;
+    @Schema(description = "media_file.file_id")
+    private String fileId;
     @Schema(description = "计划ID")
     private Long teachplanId;
     @Schema(description = "课程ID")
     private Long courseId;
     @Schema(description = "媒资文件名")
     private String mediaFileName;
+    @Schema(description = "媒资类型 video/doc")
+    private String mediaType;
+    @Schema(description = "同节内排序")
+    private Integer orderBy;
 }

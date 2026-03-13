@@ -12,12 +12,21 @@ import lombok.Data;
 @Schema(description = "计划-媒资关联")
 public class TeachplanMediaDTO {
 
-    @NotBlank(message = "媒资ID不能为空")
     @Size(max = 32, message = "媒资ID不能超过32字符")
-    @Schema(description = "媒资ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "媒资ID（兼容旧字段，可与fileId二选一）")
     private String mediaId;
+
+    @Size(max = 32, message = "fileId不能超过32字符")
+    @Schema(description = "media_file.file_id，与mediaId二选一")
+    private String fileId;
 
     @Size(max = 150, message = "媒资文件名不能超过150字符")
     @Schema(description = "媒资文件名")
     private String mediaFileName;
+
+    @Schema(description = "媒资类型 video/doc")
+    private String mediaType = "video";
+
+    @Schema(description = "同节内排序")
+    private Integer orderBy = 0;
 }

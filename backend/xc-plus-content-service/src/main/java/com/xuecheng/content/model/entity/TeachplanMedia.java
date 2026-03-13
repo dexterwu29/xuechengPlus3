@@ -25,6 +25,12 @@ public class TeachplanMedia {
     private Long courseId;
     @TableField("media_file_name")
     private String mediaFileName;
+    @TableField("file_id")
+    private String fileId;
+    @TableField("media_type")
+    private String mediaType;
+    @TableField("order_by")
+    private Integer orderBy;
     @TableLogic
     private Integer isDeleted;
     private LocalDateTime createTime;

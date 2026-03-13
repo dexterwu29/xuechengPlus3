@@ -24,3 +24,4 @@ node_modules/
 *-local.properties
 application-local.*
 bootstrap-local.*
+TEST-ACCOUNTS-local.md

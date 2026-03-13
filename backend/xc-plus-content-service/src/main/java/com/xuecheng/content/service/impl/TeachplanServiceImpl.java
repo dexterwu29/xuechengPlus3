@@ -38,6 +38,15 @@ public class TeachplanServiceImpl implements TeachplanService {
     @Override
     public List<TeachplanTreeVO> listTree(Long courseId) {
         ensureCompanyOwns(courseId);
+        return listTreeInternal(courseId);
+    }
+
+    @Override
+    public List<TeachplanTreeVO> listTreeForAdmin(Long courseId) {
+        return listTreeInternal(courseId);
+    }
+
+    private List<TeachplanTreeVO> listTreeInternal(Long courseId) {
         List<Teachplan> all = teachplanMapper.selectList(
                 new LambdaQueryWrapper<Teachplan>()
                         .eq(Teachplan::getCourseId, courseId)
@@ -46,9 +55,11 @@ public class TeachplanServiceImpl implements TeachplanService {
         List<TeachplanMedia> mediaList = teachplanMediaMapper.selectList(
                 new LambdaQueryWrapper<TeachplanMedia>()
                         .eq(TeachplanMedia::getCourseId, courseId)
+                        .orderByAsc(TeachplanMedia::getOrderBy)
         );
-        Map<Long, TeachplanMediaVO> mediaMap = mediaList.stream()
-                .collect(Collectors.toMap(TeachplanMedia::getTeachplanId, this::toMediaVO));
+        Map<Long, List<TeachplanMediaVO>> mediaMap = mediaList.stream()
+                .map(this::toMediaVO)
+                .collect(Collectors.groupingBy(TeachplanMediaVO::getTeachplanId));
 
         return buildTree(0L, all, mediaMap);
     }
@@ -155,18 +166,19 @@ public class TeachplanServiceImpl implements TeachplanService {
         teachplanMapper.update(null, new LambdaUpdateWrapper<Teachplan>().eq(Teachplan::getId, sibling.getId()).set(Teachplan::getOrderBy, curOrder).set(Teachplan::getUpdateTime, now).set(Teachplan::getUpdateBy, by));
     }
 
-    private List<TeachplanTreeVO> buildTree(Long parentId, List<Teachplan> all, Map<Long, TeachplanMediaVO> mediaMap) {
+    private List<TeachplanTreeVO> buildTree(Long parentId, List<Teachplan> all, Map<Long, List<TeachplanMediaVO>> mediaMap) {
         return all.stream()
                 .filter(t -> parentId.equals(t.getParentId()))
-                .map(t -> toTreeVO(t, mediaMap.get(t.getId())))
+                .map(t -> toTreeVO(t, mediaMap.getOrDefault(t.getId(), List.of())))
                 .peek(vo -> vo.setChildren(buildTree(vo.getId(), all, mediaMap)))
                 .collect(Collectors.toList());
     }
 
-    private TeachplanTreeVO toTreeVO(Teachplan entity, TeachplanMediaVO media) {
+    private TeachplanTreeVO toTreeVO(Teachplan entity, List<TeachplanMediaVO> mediaList) {
         TeachplanTreeVO vo = new TeachplanTreeVO();
         BeanUtils.copyProperties(entity, vo);
-        vo.setTeachplanMedia(media);
+        vo.setMediaList(mediaList);
+        vo.setTeachplanMedia(mediaList.isEmpty() ? null : mediaList.get(0));
         return vo;
     }
 

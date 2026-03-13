@@ -22,4 +22,13 @@ public interface CourseBaseService {
     void updateById(Long id, CourseUpdateDTO dto);
 
     void removeById(Long id);
+
+    void updatePic(Long id, String fileId);
+
+    /**
+     * 教师提交审核（草稿 202002 -> 待审核 202003）
+     */
+    void submit(Long id);
+
+    void publish(Long id);
 }

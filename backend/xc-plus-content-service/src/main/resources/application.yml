@@ -59,3 +59,16 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+# JWT（本地可覆盖）
+jwt:
+  secret: xcplus3-default-secret-key-at-least-32-bytes-long
+  expiration-ms: 86400000
+
+# MinIO 默认（本地覆盖用 application-local.yml）
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: xcplus
+  chunk-size: 5242880

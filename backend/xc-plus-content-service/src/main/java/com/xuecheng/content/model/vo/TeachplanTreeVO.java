@@ -33,6 +33,8 @@ public class TeachplanTreeVO {
 
     @Schema(description = "子节点列表")
     private List<TeachplanTreeVO> children;
-    @Schema(description = "媒资信息")
+    @Schema(description = "媒资信息（单条，兼容旧版）")
     private TeachplanMediaVO teachplanMedia;
+    @Schema(description = "媒资列表（一节多文件）")
+    private List<TeachplanMediaVO> mediaList;
 }

@@ -24,3 +24,17 @@ spring:
     url: jdbc:mysql://<你的MySQL地址>:3306/xcplus_content?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: <你的MySQL用户名>
     password: <你的MySQL密码>
+
+# MinIO（媒资存储，腾讯云或本地 docker）
+# bucket: 主桶，启动时不存在会自动创建
+# bucket-video / bucket-doc: 可选，视频/文档分桶；不配置则都用 bucket
+minio:
+  endpoint: http://<MinIO地址>:9000
+  access-key: minioadmin
+  secret-key: <MinIO密码>
+  bucket: xcplus3
+  # bucket-video: xcplus3-video
+  # bucket-doc: xcplus3-doc
+  chunk-size: 5242880
+
+# 测试账号见 docs/TEST-ACCOUNTS-local-example.md

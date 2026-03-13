@@ -2,7 +2,10 @@ package com.xuecheng.content.controller;
 
 import com.xuecheng.content.common.RestResponse;
 import com.xuecheng.content.model.dto.TeachplanMediaDTO;
+import com.xuecheng.content.model.vo.TeachplanMediaVO;
 import com.xuecheng.content.service.TeachplanMediaService;
+
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,10 +30,25 @@ public class TeachplanMediaController {
         return RestResponse.success();
     }
 
-    @Operation(summary = "解绑媒资")
+    @Operation(summary = "解绑该节全部媒资")
     @DeleteMapping("/{teachplanId}/media")
     public RestResponse<Void> unbindMedia(@PathVariable Long teachplanId) {
         teachplanMediaService.unbind(teachplanId);
         return RestResponse.success();
+    }
+
+    @Operation(summary = "解绑指定媒资")
+    @DeleteMapping("/{teachplanId}/media/{fileId}")
+    public RestResponse<Void> unbindMediaByFileId(
+            @PathVariable Long teachplanId,
+            @PathVariable String fileId) {
+        teachplanMediaService.unbindMedia(teachplanId, fileId);
+        return RestResponse.success();
+    }
+
+    @Operation(summary = "查询该节媒资列表")
+    @GetMapping("/{teachplanId}/media")
+    public RestResponse<List<TeachplanMediaVO>> listMedia(@PathVariable Long teachplanId) {
+        return RestResponse.success(teachplanMediaService.listMedia(teachplanId));
     }
 }
