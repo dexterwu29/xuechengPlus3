@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getCourse, createCourse, updateCourse } from '@/api/content/course'
+import { message } from 'ant-design-vue'
+import { getCourse, createCourse, updateCourse, submitCourse, updateCoursePic } from '@/api/content/course'
 import { getCourseMarket, saveCourseMarket } from '@/api/content/courseMarket'
 import { getCategoryTree } from '@/api/content/category'
 import { listTeachplans, createTeachplan, updateTeachplan, deleteTeachplan, moveTeachplanUp, moveTeachplanDown } from '@/api/content/teachplan'
+import { bindMedia, unbindMediaByFileId } from '@/api/content/teachplanMedia'
 import { listTeachers, createTeacher, updateTeacher, deleteTeacher } from '@/api/content/courseTeacher'
+import CoursePicUpload from '@/components/CoursePicUpload.vue'
+import MediaUpload from '@/components/MediaUpload.vue'
 import type {
   CourseDetailVO,
   CourseCreateDTO,
@@ -387,6 +391,44 @@ function goBack() {
   router.push('/courses')
 }
 
+async function doSubmit() {
+  if (!courseId.value) return
+  try {
+    await submitCourse(courseId.value)
+    message.success('已提交审核')
+    await loadCourse()
+  } catch (e) {
+    message.error((e as Error)?.message || '提交失败')
+  }
+}
+
+function doPreview() {
+  if (!courseId.value) return
+  window.open(`/content/courses/${courseId.value}/preview`, '_blank')
+}
+
+async function onTeachplanMediaSuccess(teachplanId: number, fileId: string, fileName: string) {
+  try {
+    const ext = fileName.split('.').pop()?.toLowerCase()
+    const mediaType = ['mp4', 'avi', 'mov', 'webm'].includes(ext || '') ? 'video' : 'doc'
+    await bindMedia(teachplanId, { fileId, mediaFileName: fileName, mediaType })
+    message.success('媒资关联成功')
+    await loadTeachplans()
+  } catch (e) {
+    message.error((e as Error)?.message || '关联失败')
+  }
+}
+
+async function unbindTeachplanMedia(teachplanId: number, fileId: string) {
+  try {
+    await unbindMediaByFileId(teachplanId, fileId)
+    message.success('已解绑')
+    await loadTeachplans()
+  } catch (e) {
+    message.error((e as Error)?.message || '解绑失败')
+  }
+}
+
 onMounted(async () => {
   await loadCategories()
   if (courseId.value) {
@@ -404,6 +446,10 @@ onMounted(async () => {
       <div class="header">
         <button class="btn-back" @click="goBack">← 返回</button>
         <h1 class="page-title">{{ isAdd ? '添加课程' : '编辑课程' }}</h1>
+        <div v-if="courseId && !isAdd" class="header-actions">
+          <a-button @click="doPreview">预览</a-button>
+          <a-button type="primary" @click="doSubmit">提交审核</a-button>
+        </div>
       </div>
 
       <div v-if="loading" class="loading">加载中...</div>
@@ -460,7 +506,7 @@ onMounted(async () => {
           </div>
           <div class="form-row">
             <label>课程图片</label>
-            <input v-model="baseForm.pic" placeholder="图片URL" />
+            <CoursePicUpload v-model="baseForm.pic" />
           </div>
           <button class="btn-save" :disabled="saving" @click="saveBase">
             {{ saving ? '保存中...' : '保存并下一步' }}
@@ -544,7 +590,7 @@ onMounted(async () => {
                 <div
                   v-for="(child, secIdx) in node.children"
                   :key="child.id"
-                  class="teachplan-node"
+                  class="teachplan-node teachplan-section"
                   :style="{ paddingLeft: (child.grade || 2) * 16 + 'px' }"
                 >
                   <div class="node-inline-actions">
@@ -558,6 +604,19 @@ onMounted(async () => {
                     <button @click="moveUp(child.id)">上移</button>
                     <button @click="moveDown(child.id)">下移</button>
                     <button class="danger" @click="removeTeachplan(child.id)">删除</button>
+                  </div>
+                  <div class="teachplan-media-block">
+                    <div v-for="m in (child.mediaList ?? [])" :key="m.fileId ?? m.mediaId" class="media-item">
+                      <span class="media-name">{{ m.mediaFileName || m.fileId }}</span>
+                      <a-button size="small" danger @click="unbindTeachplanMedia(child.id, (m.fileId ?? m.mediaId)!)">解绑</a-button>
+                    </div>
+                    <MediaUpload
+                      accept="video/*,.mp4,.pdf,.doc,.docx"
+                      :max-count="5"
+                      list-type="text"
+                      tip="视频/文档"
+                      @success="(fid, fn) => onTeachplanMediaSuccess(child.id, fid, fn)"
+                    />
                   </div>
                 </div>
               </template>
@@ -607,6 +666,38 @@ onMounted(async () => {
   align-items: center;
   gap: var(--space-4);
   margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.teachplan-media-block {
+  flex: 1 1 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+
+.media-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.media-item:last-of-type {
+  border-bottom: none;
+}
+
+.media-name {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
 }
 
 .btn-back {

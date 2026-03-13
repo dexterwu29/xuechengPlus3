@@ -5,6 +5,7 @@
  */
 import axios from 'axios'
 import type { ApiResponse } from '@/types/content'
+import router from '@/router'
 
 const request = axios.create({
   baseURL: '/content',
@@ -12,14 +13,18 @@ const request = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// 请求拦截：注入 X-Company-Id（后续从 Token 解析）
+// 请求拦截：注入 X-Company-Id、Authorization
 request.interceptors.request.use((config) => {
   const companyId = localStorage.getItem('companyId') || '1'
   config.headers['X-Company-Id'] = companyId
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`
+  }
   return config
 })
 
-// 响应拦截：统一处理 code !== 0，直接返回 data（业务层拿到的是 data）
+// 响应拦截：统一处理 code !== 0，401 跳转登录
 request.interceptors.response.use(
   (res) => {
     const body = res.data as ApiResponse<unknown>
@@ -29,7 +34,18 @@ request.interceptors.response.use(
     }
     return data as never
   },
-  (err) => Promise.reject(err)
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('companyId')
+      localStorage.removeItem('user')
+      const to = router.currentRoute.value
+      if (to.path !== '/login') {
+        router.replace({ path: '/login', query: { redirect: to.fullPath } })
+      }
+    }
+    return Promise.reject(err)
+  }
 )
 
 export default request

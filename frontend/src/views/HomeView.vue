@@ -2,7 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { getCategoryTree } from '@/api/content/category'
-import type { CourseCategoryTreeVO } from '@/types/content'
+import { listPublicCourses } from '@/api/content/publicCourse'
+import type { CourseCategoryTreeVO, CourseBaseVO } from '@/types/content'
 
 // Banner 轮播 - Light 主题
 const banners = [
@@ -78,7 +79,26 @@ async function loadCategories() {
   }
 }
 
-onMounted(loadCategories)
+// 已发布课程
+const publishedCourses = ref<CourseBaseVO[]>([])
+const loadingCourses = ref(false)
+
+async function loadPublishedCourses() {
+  loadingCourses.value = true
+  try {
+    const res = await listPublicCourses({ pageNo: 1, pageSize: 8 })
+    publishedCourses.value = res?.items ?? []
+  } catch {
+    publishedCourses.value = []
+  } finally {
+    loadingCourses.value = false
+  }
+}
+
+onMounted(() => {
+  loadCategories()
+  loadPublishedCourses()
+})
 </script>
 
 <template>
@@ -132,6 +152,34 @@ onMounted(loadCategories)
           :aria-label="`切换到第 ${i + 1} 张`"
           @click="goToBanner(i)"
         />
+      </div>
+    </section>
+
+    <!-- 已发布课程 - 首页展示 -->
+    <section v-if="publishedCourses.length" class="section courses-section">
+      <div class="container">
+        <h2 class="section-title">精选课程</h2>
+        <div class="course-grid">
+          <RouterLink
+            v-for="c in publishedCourses"
+            :key="c.id"
+            :to="`/courses/${c.id}`"
+            class="course-card"
+          >
+            <div class="course-pic">
+              <img
+                v-if="c.pic?.startsWith('http')"
+                :src="c.pic"
+                :alt="c.name"
+              />
+              <div v-else class="course-pic-placeholder">课程封面</div>
+            </div>
+            <div class="course-info">
+              <h3 class="course-name">{{ c.name }}</h3>
+              <p v-if="c.users" class="course-users">{{ c.users }}</p>
+            </div>
+          </RouterLink>
+        </div>
       </div>
     </section>
 
@@ -383,6 +431,66 @@ onMounted(loadCategories)
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--space-6);
+}
+
+/* 课程卡片 */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.course-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.course-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-hover);
+}
+
+.course-pic {
+  aspect-ratio: 16/9;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.course-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-pic-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.course-info {
+  padding: var(--space-4);
+}
+
+.course-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+
+.course-users {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
 }
 
 /* 价值主张 */

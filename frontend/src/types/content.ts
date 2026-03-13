@@ -111,12 +111,24 @@ export interface TeachplanTreeVO {
   status?: number
   isPreviewEnabled?: string
   children?: TeachplanTreeVO[]
-  teachplanMedia?: { mediaId?: string; mediaFileName?: string }
+  teachplanMedia?: { mediaId?: string; fileId?: string; mediaFileName?: string }
+  mediaList?: TeachplanMediaVO[]
 }
 
 export interface TeachplanMediaDTO {
-  mediaId: string
+  fileId?: string
+  mediaId?: string
   mediaFileName: string
+  mediaType?: string
+  orderBy?: number
+}
+
+export interface TeachplanMediaVO {
+  mediaId?: string
+  fileId?: string
+  mediaFileName?: string
+  mediaType?: string
+  orderBy?: number
 }
 
 export interface CourseTeacherDTO {

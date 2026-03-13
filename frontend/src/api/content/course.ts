@@ -33,3 +33,11 @@ export function deleteCourse(id: number) {
 export function publishCourse(id: number) {
   return request.post(`${BASE}/${id}/publish`)
 }
+
+export function submitCourse(id: number) {
+  return request.post(`${BASE}/${id}/submit`)
+}
+
+export function updateCoursePic(id: number, fileId: string) {
+  return request.put(`${BASE}/${id}/pic`, null, { params: { fileId } })
+}

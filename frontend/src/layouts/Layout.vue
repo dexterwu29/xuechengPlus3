@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, computed } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
+const router = useRouter()
+const authStore = useAuthStore()
 const navOpen = ref(false)
+
+const isLoggedIn = computed(() => authStore.isLoggedIn)
+const username = computed(() => authStore.user?.username ?? '')
+
+function logout() {
+  authStore.logout()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -19,7 +30,13 @@ const navOpen = ref(false)
           <RouterLink to="/courses" class="nav-link">关于</RouterLink>
         </nav>
         <div class="header-actions">
-          <RouterLink to="/courses" class="btn btn-primary">立即学习</RouterLink>
+          <RouterLink v-if="isLoggedIn" to="/courses" class="btn btn-primary">课程管理</RouterLink>
+          <RouterLink v-else to="/" class="btn btn-primary">立即学习</RouterLink>
+          <RouterLink v-if="!isLoggedIn" to="/login" class="btn btn-outline">登录</RouterLink>
+          <template v-else>
+            <span class="user-name">{{ username }}</span>
+            <button type="button" class="btn btn-outline" @click="logout">退出</button>
+          </template>
         </div>
         <button
           class="nav-toggle"
@@ -126,6 +143,23 @@ const navOpen = ref(false)
 .btn-primary:hover {
   background: var(--color-cta-hover);
   box-shadow: var(--shadow-hover);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.user-name {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-right: var(--space-2);
 }
 
 .nav-toggle {
