@@ -1,14 +1,86 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { ref, computed, h, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { HomeOutlined, AppstoreOutlined, BookOutlined, TeamOutlined, FileTextOutlined } from '@ant-design/icons-vue'
+import type { MenuProps } from 'ant-design-vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const navOpen = ref(false)
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 const username = computed(() => authStore.user?.username ?? '')
+const role = computed(() => authStore.user?.role ?? '')
+/** 管理页面仅 teacher、super_admin 可见（已移除 admin 角色） */
+const canManage = computed(() => ['teacher', 'super_admin'].includes(role.value))
+
+const selectedKeys = ref<string[]>([])
+const openKeys = ref<string[]>([])
+
+function syncMenuState() {
+  const p = route.path
+  const sel: string[] = []
+  const open: string[] = []
+  if (p === '/') sel.push('home')
+  else if (p.startsWith('/manage/courses')) { sel.push('manage-courses'); open.push('manage') }
+  else if (p.startsWith('/manage/media')) { sel.push('manage-media'); open.push('manage') }
+  else if (p.startsWith('/manage/archives')) { sel.push('manage-archives'); open.push('manage') }
+  else if (p.startsWith('/manage/audit')) { sel.push('manage-audit'); open.push('manage') }
+  else if (p.startsWith('/manage/messages')) { sel.push('manage-messages'); open.push('manage') }
+  else if (p.startsWith('/courses/free')) { sel.push('courses-free'); open.push('courses') }
+  else if (p.startsWith('/courses/featured')) { sel.push('courses-featured'); open.push('courses') }
+  else if (p.startsWith('/courses/new')) { sel.push('courses-new'); open.push('courses') }
+  else if (p.startsWith('/forum')) sel.push('forum')
+  else if (p.startsWith('/about')) sel.push('about')
+  selectedKeys.value = sel
+  openKeys.value = open
+}
+syncMenuState()
+
+const menuItems = computed<MenuProps['items']>(() => {
+  const items: MenuProps['items'] = [
+    { key: 'home', icon: () => h(HomeOutlined), label: '首页', title: '首页', onClick: () => router.push('/') },
+  ]
+  if (canManage.value) {
+    const manageChildren: MenuProps['items'] = [
+      { key: 'manage-courses', label: '课程管理', title: '课程管理', onClick: () => router.push('/manage/courses') },
+      { key: 'manage-media', label: '媒资管理', title: '媒资管理', onClick: () => router.push('/manage/media') },
+      { key: 'manage-archives', label: '备案管理', title: '机构/讲师/销售备案', onClick: () => router.push('/manage/archives') },
+    ]
+    if (role.value === 'super_admin') {
+      manageChildren.push({ key: 'manage-audit', label: '课程审核', title: '课程审核', onClick: () => router.push('/manage/audit') })
+    }
+    manageChildren.push({ key: 'manage-messages', label: '站内信', title: '站内信', onClick: () => router.push('/manage/messages') })
+    items.push({
+      key: 'manage',
+      icon: () => h(AppstoreOutlined),
+      label: '管理页面',
+      title: '管理页面',
+      children: manageChildren,
+    })
+  }
+  /* 文档第一 1.3：课程拆分为免费课、热门专题1(精选推荐)、热门专题2(新上架) */
+  items.push({
+    key: 'courses',
+    icon: () => h(BookOutlined),
+    label: '课程',
+    title: '课程',
+    children: [
+      { key: 'courses-free', label: '免费课', title: '免费课（含试看）', onClick: () => router.push('/courses/free') },
+      { key: 'courses-featured', label: '精选推荐', title: '热门专题1：精选推荐', onClick: () => router.push('/courses/featured') },
+      { key: 'courses-new', label: '新上架', title: '热门专题2：新上架', onClick: () => router.push('/courses/new') },
+    ],
+  })
+  items.push(
+    { key: 'forum', icon: () => h(TeamOutlined), label: '分享论坛', title: '分享论坛', onClick: () => router.push('/forum') },
+    { key: 'about', icon: () => h(FileTextOutlined), label: '关于我们', title: '关于我们', onClick: () => router.push('/about') }
+  )
+  return items
+})
+
+watch(() => route.path, syncMenuState)
 
 function logout() {
   authStore.logout()
@@ -18,20 +90,21 @@ function logout() {
 
 <template>
   <div class="layout">
-    <!-- 顶部导航 - UI-UX-Pro-Max: 浮动导航 + 玻璃态 -->
     <header class="header">
       <div class="header-inner">
-        <RouterLink to="/" class="logo">
+        <a class="logo" @click="router.push('/')">
           <span class="logo-text">学成在线</span>
-        </RouterLink>
+        </a>
         <nav class="nav" :class="{ open: navOpen }">
-          <RouterLink to="/" class="nav-link">首页</RouterLink>
-          <RouterLink to="/courses" class="nav-link">课程</RouterLink>
-          <RouterLink to="/courses" class="nav-link">关于</RouterLink>
+          <a-menu
+            v-model:selectedKeys="selectedKeys"
+            v-model:openKeys="openKeys"
+            mode="horizontal"
+            :items="menuItems"
+            class="nav-menu"
+          />
         </nav>
         <div class="header-actions">
-          <RouterLink v-if="isLoggedIn" to="/courses" class="btn btn-primary">课程管理</RouterLink>
-          <RouterLink v-else to="/" class="btn btn-primary">立即学习</RouterLink>
           <RouterLink v-if="!isLoggedIn" to="/login" class="btn btn-outline">登录</RouterLink>
           <template v-else>
             <span class="user-name">{{ username }}</span>
@@ -93,6 +166,7 @@ function logout() {
 }
 
 .logo {
+  cursor: pointer;
   text-decoration: none;
   color: var(--color-text);
   font-family: 'Source Serif 4', serif;
@@ -109,19 +183,26 @@ function logout() {
 
 .nav {
   display: flex;
-  gap: var(--space-6);
+  align-items: center;
+  flex: 1;
+  margin: 0 var(--space-4);
 }
 
-.nav-link {
-  color: var(--color-text-muted);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color var(--transition-base);
+.nav-menu {
+  border: none !important;
+  background: transparent !important;
+  line-height: 40px !important;
 }
 
-.nav-link:hover,
-.nav-link.router-link-active {
-  color: var(--color-accent);
+.nav-menu :deep(.ant-menu-item),
+.nav-menu :deep(.ant-menu-submenu-title) {
+  color: var(--color-text-muted) !important;
+}
+
+.nav-menu :deep(.ant-menu-item:hover),
+.nav-menu :deep(.ant-menu-submenu-title:hover),
+.nav-menu :deep(.ant-menu-item-selected) {
+  color: var(--color-accent) !important;
 }
 
 .btn {

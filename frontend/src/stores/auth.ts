@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = vo.token
     user.value = vo
     localStorage.setItem(TOKEN_KEY, vo.token)
-    localStorage.setItem(COMPANY_KEY, String(vo.companyId))
+    localStorage.setItem(COMPANY_KEY, vo.companyId != null ? String(vo.companyId) : '1')
     localStorage.setItem(USER_KEY, JSON.stringify(vo))
   }
 

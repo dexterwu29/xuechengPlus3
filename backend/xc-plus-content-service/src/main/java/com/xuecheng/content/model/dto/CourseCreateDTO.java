@@ -49,4 +49,10 @@ public class CourseCreateDTO {
     @Size(max = 500, message = "课程图片URL不能超过500字符")
     @Schema(description = "课程图片URL")
     private String pic;
+
+    @Schema(description = "封面图fileId数组JSON，最多3个")
+    private String coverPics;
+
+    @Schema(description = "默认封面索引0-2")
+    private Integer defaultCoverIndex;
 }

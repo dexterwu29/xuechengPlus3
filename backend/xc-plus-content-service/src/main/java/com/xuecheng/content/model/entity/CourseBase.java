@@ -29,13 +29,16 @@ public class CourseBase {
     private String teachMode;
     private String description;
     private String pic;
+    @TableField("cover_pics")
+    private String coverPics;  // JSON array of "media:fileId", max 3
+    @TableField("default_cover_index")
+    private Integer defaultCoverIndex;  // 0-2
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String createBy;
     private String updateBy;
-    private String auditStatus;
-    @TableField("publish_status")
-    private String publishStatus;
+    @TableField("course_status")
+    private String courseStatus;
     @TableLogic
     private Integer isDeleted;
 }

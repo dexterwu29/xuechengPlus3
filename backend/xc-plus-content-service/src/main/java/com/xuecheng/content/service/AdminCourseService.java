@@ -11,7 +11,7 @@ import java.util.List;
 public interface AdminCourseService {
 
     /**
-     * 待审核课程列表（audit_status=202003）
+     * 待审核课程列表（course_status=100）
      */
     List<CourseBaseVO> listPending();
 
@@ -21,7 +21,7 @@ public interface AdminCourseService {
     CourseDetailVO getByIdForAudit(Long id);
 
     /**
-     * 审核：通过(202004) 或 不通过(202001)
+     * 审核：approve通过(100→111) / reject退回(100→000) / ban封禁(100→112)
      */
-    void audit(Long id, boolean approved);
+    void audit(Long id, String action, String opinion);
 }

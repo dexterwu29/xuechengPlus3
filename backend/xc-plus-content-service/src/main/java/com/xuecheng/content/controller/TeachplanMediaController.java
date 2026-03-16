@@ -51,4 +51,18 @@ public class TeachplanMediaController {
     public RestResponse<List<TeachplanMediaVO>> listMedia(@PathVariable Long teachplanId) {
         return RestResponse.success(teachplanMediaService.listMedia(teachplanId));
     }
+
+    @Operation(summary = "更新视频时长（31.4）")
+    @PutMapping("/{teachplanId}/media/{fileId}/duration")
+    public RestResponse<Void> updateMediaDuration(
+            @PathVariable Long teachplanId,
+            @PathVariable String fileId,
+            @RequestBody java.util.Map<String, Integer> body) {
+        Integer duration = body.get("duration");
+        if (duration == null || duration < 0) {
+            return RestResponse.fail(400, "时长参数无效");
+        }
+        teachplanMediaService.updateDuration(teachplanId, fileId, duration);
+        return RestResponse.success();
+    }
 }

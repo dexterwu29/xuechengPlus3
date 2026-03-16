@@ -44,18 +44,18 @@ export function checkByMd5(md5: string): Promise<{ exists: boolean; fileId: stri
     .then((res) => res.data)
 }
 
-/** 初始化分片上传 */
+/** 初始化分片上传；秒传时返回 { instant: true, fileId }，否则返回 { uploadId } */
 export function initChunkUpload(
   fileMd5: string,
   fileName: string,
   fileSize: number,
   chunkSize?: number
-): Promise<string> {
+): Promise<{ uploadId?: string; fileId?: string; instant?: boolean }> {
   return uploadRequest
-    .post<{ uploadId: string }>(`${BASE}/upload/init`, null, {
+    .post<{ uploadId?: string; fileId?: string; instant?: boolean }>(`${BASE}/upload/init`, null, {
       params: { fileMd5, fileName, fileSize, chunkSize: chunkSize ?? 0 },
     })
-    .then((res) => res.data?.uploadId ?? '')
+    .then((res) => res.data ?? {})
 }
 
 /** 查询已上传分片 */
@@ -97,4 +97,50 @@ export interface MediaFileVO {
 
 export function getFileInfo(fileId: string): Promise<MediaFileVO> {
   return uploadRequest.get<MediaFileVO>(`${BASE}/${fileId}`).then((res) => res.data)
+}
+
+/** 31.4：获取 MD 等文本文件内容，用于弹窗预览（避免 CORS） */
+export function getFileContent(fileId: string): Promise<string> {
+  return uploadRequest
+    .get<string>(`${BASE}/${fileId}/content`, { responseType: 'text' })
+    .then((res) => (typeof res.data === 'string' ? res.data : ''))
+}
+
+/** 媒资播放权限检查（含 playUrl，未登录可调用以获取 reason） */
+export interface MediaAccessResult {
+  allowed: boolean
+  reason?: 'not_logged_in' | 'not_purchased' | 'course_not_published'
+  playUrl?: string
+}
+
+export function checkPlayAccess(fileId: string): Promise<MediaAccessResult> {
+  return request.get<MediaAccessResult>(`${BASE}/${fileId}/play`)
+}
+
+// ==================== 31.4: 视频转码相关接口 ====================
+
+/** 检查文件是否需要转码 */
+export interface TranscodeCheckResult {
+  needsTranscoding: boolean
+  transcodingSupported: boolean
+}
+
+export function checkTranscodeNeeded(fileId: string): Promise<TranscodeCheckResult> {
+  return request.get<TranscodeCheckResult>(`${BASE}/${fileId}/transcode/check`)
+}
+
+/** 转码视频为MP4 */
+export function transcodeToMp4(fileId: string): Promise<{ fileId: string }> {
+  return request.post<{ fileId: string }>(`${BASE}/${fileId}/transcode`)
+}
+
+/** 检查文件扩展名是否为不支持的格式（如AVI） */
+export function isUnsupportedVideoFormat(fileName: string): boolean {
+  if (!fileName || !fileName.includes('.')) return false
+  const ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase()
+  // 浏览器原生支持的视频格式
+  const supportedFormats = ['mp4', 'webm', 'ogg', 'm4v']
+  // 常见但不支持的格式
+  const unsupportedFormats = ['avi', 'mov', 'mkv', 'flv', 'wmv', 'rmvb', 'rm']
+  return unsupportedFormats.includes(ext)
 }

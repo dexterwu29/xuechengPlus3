@@ -40,7 +40,18 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 或使用 IDE 运行 `ContentServiceApplication`，激活 `local` 配置。
 
-### 2.4 验证
+### 2.4 热部署（DevTools）
+
+项目已集成 Spring Boot DevTools，修改 Java 代码保存后会自动重启。
+
+**IDE 需开启自动编译：**
+- **IntelliJ IDEA**：`Settings → Build, Execution, Deployment → Compiler` 勾选 `Build project automatically`；`Advanced Settings` 勾选 `Allow auto-make to start even if developed application is currently running`
+- **VS Code / Cursor**：Java 扩展默认支持，保存时自动编译
+- **Eclipse**：`Project → Build Automatically` 勾选
+
+启动后改代码并保存，控制台会看到 `Restarting...` 即生效。
+
+### 2.5 验证
 
 - 健康检查：`http://localhost:11001/content/actuator/health`
 - Knife4j 文档：`http://localhost:11001/content/doc.html`

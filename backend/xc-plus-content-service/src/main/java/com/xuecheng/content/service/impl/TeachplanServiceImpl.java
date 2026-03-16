@@ -125,6 +125,14 @@ public class TeachplanServiceImpl implements TeachplanService {
             throw new BusinessException(404, "课程计划不存在");
         }
         ensureCompanyOwns(existing.getCourseId());
+        if (existing.getGrade() != null && existing.getGrade() == 1) {
+            long childCount = teachplanMapper.selectCount(
+                    new LambdaQueryWrapper<Teachplan>().eq(Teachplan::getParentId, id)
+            );
+            if (childCount > 0) {
+                throw new BusinessException(400, "该章下有子节，请先删除所有子节后再删除章");
+            }
+        }
         teachplanMapper.deleteById(id);
     }
 

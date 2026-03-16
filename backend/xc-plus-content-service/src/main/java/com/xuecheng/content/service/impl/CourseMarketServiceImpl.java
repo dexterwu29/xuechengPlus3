@@ -78,6 +78,19 @@ public class CourseMarketServiceImpl implements CourseMarketService {
                 throw new BusinessException(400, "收费课程必须填写有效期天数且大于0");
             }
         }
+        // 文档 3.1：QQ、微信、手机号必填，手机号 1[3-9]\d{9}
+        if (dto.getQq() == null || dto.getQq().isBlank()) {
+            throw new BusinessException(400, "咨询QQ不能为空");
+        }
+        if (dto.getWechat() == null || dto.getWechat().isBlank()) {
+            throw new BusinessException(400, "微信不能为空");
+        }
+        if (dto.getPhone() == null || dto.getPhone().isBlank()) {
+            throw new BusinessException(400, "手机号不能为空");
+        }
+        if (!dto.getPhone().trim().matches("^1[3-9]\\d{9}$")) {
+            throw new BusinessException(400, "手机号需为11位，1开头，第二位3-9");
+        }
     }
 
     private void ensureCompanyOwns(Long courseId) {

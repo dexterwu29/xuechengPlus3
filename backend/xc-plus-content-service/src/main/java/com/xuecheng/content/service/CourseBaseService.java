@@ -30,5 +30,10 @@ public interface CourseBaseService {
      */
     void submit(Long id);
 
+    /**
+     * 管理员提交：直接 已提交+已审核+已发布（草稿 202002 -> 202004 + 203002）
+     */
+    void submitAndPublish(Long id);
+
     void publish(Long id);
 }

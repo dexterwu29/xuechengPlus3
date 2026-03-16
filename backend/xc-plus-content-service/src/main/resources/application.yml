@@ -2,6 +2,15 @@
 # 本地覆盖：复制 application-example.yml 为 application-local.yml 并填入你的信息
 
 spring:
+  # 文件上传限制（分片每片约 5MB，需 ≥5MB；大视频建议 100MB）
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  # DevTools 热部署：改 Java 代码后自动重启（需 IDE 开启自动编译）
+  devtools:
+    restart:
+      enabled: true
   application:
     name: xc-plus-content-service
   profiles:
@@ -17,6 +26,8 @@ spring:
   config:
     import:
       - optional:nacos:xc-plus-content-service.yaml?group=DEFAULT_GROUP
+      # 31.4：profile 专用配置（如 local），可覆盖 transcode 等本地路径
+      - optional:nacos:xc-plus-content-service-${spring.profiles.active}.yaml?group=DEFAULT_GROUP
   jackson:
     date-format: "yyyy-MM-dd'T'HH:mm:ss"
     time-zone: "Asia/Shanghai"

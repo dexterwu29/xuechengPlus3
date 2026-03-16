@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 课程详情 VO（含 base + market）
@@ -36,14 +37,18 @@ public class CourseDetailVO {
     private String description;
     @Schema(description = "课程图片")
     private String pic;
+    @Schema(description = "封面图fileId数组JSON，最多3个")
+    private String coverPics;
+    @Schema(description = "默认封面索引0-2")
+    private Integer defaultCoverIndex;
+    @Schema(description = "封面图URL数组（公开接口返回，供前端直接展示）")
+    private List<String> coverPicUrls;
     @Schema(description = "创建时间（东八区）")
     private LocalDateTime createTime;
     @Schema(description = "更新时间（东八区）")
     private LocalDateTime updateTime;
-    @Schema(description = "审核状态")
-    private String auditStatus;
-    @Schema(description = "发布状态")
-    private String publishStatus;
+    @Schema(description = "课程状态：000草稿 100待审核 111已发布 112已下架")
+    private String courseStatus;
 
     @Schema(description = "收费规则")
     private String charge;

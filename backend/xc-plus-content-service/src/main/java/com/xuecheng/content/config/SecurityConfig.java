@@ -40,7 +40,9 @@ public class SecurityConfig {
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/actuator/**", "/doc.html", "/v3/api-docs/**", "/swagger-ui/**", "/webjars/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/courses/**", "/teachplans/**", "/media/**").authenticated()
+                        .requestMatchers("/courses/*/preview", "/public/courses/*/preview").permitAll()
+                        .requestMatchers("/media/*/play").permitAll()
+                        .requestMatchers("/courses/**", "/teachplans/**", "/media/**", "/archives/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

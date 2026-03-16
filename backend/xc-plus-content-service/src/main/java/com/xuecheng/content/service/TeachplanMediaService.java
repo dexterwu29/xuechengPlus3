@@ -17,4 +17,12 @@ public interface TeachplanMediaService {
     void unbindMedia(Long teachplanId, String fileId);
 
     List<TeachplanMediaVO> listMedia(Long teachplanId);
+
+    /**
+     * 31.4：更新视频时长
+     * @param teachplanId 教学计划ID
+     * @param fileId 媒资文件ID
+     * @param duration 视频时长（秒）
+     */
+    void updateDuration(Long teachplanId, String fileId, Integer duration);
 }

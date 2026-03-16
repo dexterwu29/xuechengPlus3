@@ -37,4 +37,13 @@ minio:
   # bucket-doc: xcplus3-doc
   chunk-size: 5242880
 
+# 视频转码配置（31.4：支持AVI等格式转码为MP4）
+# Windows 示例: D:\ffmpeg\bin\ffmpeg.exe
+# Linux 示例: /usr/bin/ffmpeg
+transcode:
+  ffmpeg-path: <FFmpeg可执行文件路径>
+  # ffprobe-path 如果不配置，会从ffmpeg路径自动推导
+  auto-transcode: true
+  timeout-seconds: 600
+
 # 测试账号见 docs/TEST-ACCOUNTS-local-example.md

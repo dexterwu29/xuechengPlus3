@@ -21,9 +21,13 @@ async function onFinish() {
   }
   loading.value = true
   try {
-    await authStore.login(formState.username.trim(), formState.password)
+    const vo = await authStore.login(formState.username.trim(), formState.password)
     message.success('登录成功')
-    const redirect = (route.query.redirect as string) || '/courses'
+    const rawRedirect = (route.query.redirect as string) || ''
+    const canManage = ['teacher', 'super_admin'].includes(vo?.role ?? '')
+    const managePaths = ['/manage/courses', '/manage/media', '/courses/add', '/courses/']
+    const redirectToManage = managePaths.some((p) => rawRedirect.startsWith(p))
+    const redirect = redirectToManage && !canManage ? '/' : (rawRedirect || (canManage ? '/manage/courses' : '/'))
     router.replace(redirect)
   } catch (e) {
     message.error((e as Error)?.message || '登录失败')

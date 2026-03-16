@@ -24,6 +24,8 @@ public class TeachplanMediaVO {
     private String mediaFileName;
     @Schema(description = "媒资类型 video/doc")
     private String mediaType;
+    @Schema(description = "视频时长（秒），仅视频类型有效")
+    private Integer duration;
     @Schema(description = "同节内排序")
     private Integer orderBy;
 }

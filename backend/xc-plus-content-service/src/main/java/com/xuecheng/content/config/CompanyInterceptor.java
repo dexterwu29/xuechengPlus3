@@ -18,19 +18,23 @@ public class CompanyInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        LoginUser user = UserContext.get();
+        // SuperAdmin：最高权限，可查看全部机构数据，无需 X-Company-Id
+        if (user != null && user.isSuperAdmin()) {
+            CompanyContext.setCompanyId(null);
+            return true;
+        }
         String companyIdStr = request.getHeader(HEADER_COMPANY_ID);
         Long companyId = null;
-        if (companyIdStr != null && !companyIdStr.isBlank()) {
+        if (companyIdStr != null && !companyIdStr.isBlank() && !"null".equalsIgnoreCase(companyIdStr.trim())) {
             try {
                 companyId = Long.parseLong(companyIdStr.trim());
             } catch (NumberFormatException e) {
                 throw new BusinessException(400, "X-Company-Id 必须为有效数字");
             }
-        } else {
-            LoginUser user = UserContext.get();
-            if (user != null && user.isTeacher() && user.getCompanyId() != null) {
-                companyId = user.getCompanyId();
-            }
+        }
+        if (companyId == null && user != null && user.isTeacher() && user.getCompanyId() != null) {
+            companyId = user.getCompanyId();
         }
         if (companyId == null) {
             throw new BusinessException(403, "缺少机构标识，请提供 X-Company-Id 请求头或使用教师账号登录");

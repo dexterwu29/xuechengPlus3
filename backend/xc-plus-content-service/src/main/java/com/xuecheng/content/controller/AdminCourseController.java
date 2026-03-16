@@ -1,6 +1,7 @@
 package com.xuecheng.content.controller;
 
 import com.xuecheng.content.common.RestResponse;
+import com.xuecheng.content.model.dto.AuditDTO;
 import com.xuecheng.content.model.vo.CourseBaseVO;
 import com.xuecheng.content.model.vo.CourseDetailVO;
 import com.xuecheng.content.service.AdminCourseService;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -46,12 +49,12 @@ public class AdminCourseController {
         return RestResponse.success(tree);
     }
 
-    @Operation(summary = "审核：通过/不通过")
+    @Operation(summary = "审核：approve通过 / reject退回 / ban封禁")
     @PostMapping("/{id}/audit")
     public RestResponse<Void> audit(
             @PathVariable Long id,
-            @RequestParam boolean approved) {
-        adminCourseService.audit(id, approved);
+            @RequestBody @Valid AuditDTO dto) {
+        adminCourseService.audit(id, dto.getAction(), dto.getOpinion());
         return RestResponse.success();
     }
 }

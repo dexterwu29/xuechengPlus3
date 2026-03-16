@@ -29,6 +29,7 @@ public class TeachplanMedia {
     private String fileId;
     @TableField("media_type")
     private String mediaType;
+    private Integer duration;  // 视频时长（秒），仅视频类型有效
     @TableField("order_by")
     private Integer orderBy;
     @TableLogic

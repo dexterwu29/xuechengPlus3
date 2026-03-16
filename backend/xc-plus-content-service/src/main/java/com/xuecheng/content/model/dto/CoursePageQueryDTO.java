@@ -28,13 +28,9 @@ public class CoursePageQueryDTO {
     @Schema(description = "课程名称（模糊）")
     private String courseName;
 
-    @Pattern(regexp = "^(202001|202002|202003|202004)?$", message = "审核状态必须为202001/202002/202003/202004")
-    @Schema(description = "审核状态：202001未通过 202002未提交 202003已提交 202004通过")
-    private String auditStatus;
-
-    @Pattern(regexp = "^(203001|203002|203003)?$", message = "发布状态必须为203001/203002/203003")
-    @Schema(description = "发布状态：203001未发布 203002已发布 203003下线")
-    private String publishStatus;
+    @Pattern(regexp = "^(000|100|111|112)?$", message = "课程状态必须为000/100/111/112")
+    @Schema(description = "课程状态：000草稿 100待审核 111已发布 112已下架")
+    private String courseStatus;
 
     @Size(max = 20, message = "大分类ID不能超过20字符")
     @Schema(description = "大分类ID，如 1-001")

@@ -15,7 +15,8 @@ const request = axios.create({
 
 // 请求拦截：注入 X-Company-Id、Authorization
 request.interceptors.request.use((config) => {
-  const companyId = localStorage.getItem('companyId') || '1'
+  let companyId = localStorage.getItem('companyId') || '1'
+  if (companyId === 'null' || companyId === 'undefined' || !companyId.trim()) companyId = '1'
   config.headers['X-Company-Id'] = companyId
   const token = localStorage.getItem('token')
   if (token) {
@@ -44,7 +45,8 @@ request.interceptors.response.use(
         router.replace({ path: '/login', query: { redirect: to.fullPath } })
       }
     }
-    return Promise.reject(err)
+    const msg = err.response?.data?.msg ?? err.message
+    return Promise.reject(new Error(msg))
   }
 )
 

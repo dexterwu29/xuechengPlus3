@@ -112,8 +112,31 @@ public class TeachplanMediaServiceImpl implements TeachplanMediaService {
         vo.setCourseId(e.getCourseId());
         vo.setMediaFileName(e.getMediaFileName());
         vo.setMediaType(e.getMediaType());
+        vo.setDuration(e.getDuration());
         vo.setOrderBy(e.getOrderBy());
         return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateDuration(Long teachplanId, String fileId, Integer duration) {
+        Teachplan plan = teachplanMapper.selectById(teachplanId);
+        if (plan == null) {
+            throw new BusinessException(404, "课程计划不存在");
+        }
+        ensureCompanyOwns(plan.getCourseId());
+
+        TeachplanMedia entity = teachplanMediaMapper.selectOne(
+                new LambdaQueryWrapper<TeachplanMedia>()
+                        .eq(TeachplanMedia::getTeachplanId, teachplanId)
+                        .eq(TeachplanMedia::getFileId, fileId));
+        if (entity == null) {
+            throw new BusinessException(404, "媒资关联不存在");
+        }
+
+        entity.setDuration(duration);
+        entity.setUpdateTime(LocalDateTime.now());
+        teachplanMediaMapper.updateById(entity);
     }
 
     private void ensureCompanyOwns(Long courseId) {

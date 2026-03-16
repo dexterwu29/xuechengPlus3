@@ -19,6 +19,7 @@ public class MediaFile {
     private String fileName;
     private Long fileSize;
     private String fileType;
+    private Integer duration;  // 视频时长（秒），仅视频类型有效
     private String contentType;
     private String bucket;
     private Long companyId;

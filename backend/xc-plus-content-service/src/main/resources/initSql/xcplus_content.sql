@@ -49,6 +49,8 @@ CREATE TABLE `course_base` (
   `teach_mode` varchar(32) DEFAULT NULL COMMENT '教育模式',
   `description` text COMMENT '课程介绍',
   `pic` varchar(500) DEFAULT NULL COMMENT '课程图片',
+  `cover_pics` text DEFAULT NULL COMMENT '封面图fileId数组JSON，最多3个',
+  `default_cover_index` tinyint NOT NULL DEFAULT 0 COMMENT '默认封面索引0-2',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `create_by` varchar(50) DEFAULT NULL,

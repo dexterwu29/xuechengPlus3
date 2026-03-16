@@ -27,4 +27,9 @@ public class LoginUser {
     public boolean isVisitor() {
         return "visitor".equals(role);
     }
+
+    /** 超级管理员：提交课程时直接发布（新版本仅 super_admin，已移除 admin 角色） */
+    public boolean isAdminOrSuperAdmin() {
+        return "super_admin".equals(role);
+    }
 }

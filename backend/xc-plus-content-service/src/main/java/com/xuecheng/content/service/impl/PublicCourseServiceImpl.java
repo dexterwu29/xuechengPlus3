@@ -8,6 +8,7 @@ import com.xuecheng.content.mapper.CourseMarketMapper;
 import com.xuecheng.content.mapper.TeachplanMapper;
 import com.xuecheng.content.mapper.TeachplanMediaMapper;
 import com.xuecheng.content.model.dto.PageParams;
+import com.xuecheng.content.model.enums.CourseStatus;
 import com.xuecheng.content.model.entity.CourseBase;
 import com.xuecheng.content.model.entity.CourseMarket;
 import com.xuecheng.content.model.entity.Teachplan;
@@ -17,12 +18,16 @@ import com.xuecheng.content.model.vo.CourseDetailVO;
 import com.xuecheng.content.model.vo.PageResult;
 import com.xuecheng.content.model.vo.TeachplanMediaVO;
 import com.xuecheng.content.model.vo.TeachplanTreeVO;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xuecheng.content.service.MediaUploadService;
 import com.xuecheng.content.service.PublicCourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,17 +39,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PublicCourseServiceImpl implements PublicCourseService {
 
-    private static final String PUBLISHED = "203002";
-
     private final CourseBaseMapper courseBaseMapper;
     private final CourseMarketMapper courseMarketMapper;
     private final TeachplanMapper teachplanMapper;
     private final TeachplanMediaMapper teachplanMediaMapper;
+    private final MediaUploadService mediaUploadService;
 
     @Override
     public PageResult<CourseBaseVO> pagePublished(PageParams params, String courseName, String mt, String st) {
         LambdaQueryWrapper<CourseBase> wrapper = new LambdaQueryWrapper<CourseBase>()
-                .eq(CourseBase::getPublishStatus, PUBLISHED);
+                .eq(CourseBase::getCourseStatus, CourseStatus.PUBLISHED.getCode());
         if (StringUtils.hasText(courseName)) {
             wrapper.like(CourseBase::getName, courseName);
         }
@@ -67,7 +71,7 @@ public class PublicCourseServiceImpl implements PublicCourseService {
         CourseBase base = courseBaseMapper.selectOne(
                 new LambdaQueryWrapper<CourseBase>()
                         .eq(CourseBase::getId, id)
-                        .eq(CourseBase::getPublishStatus, PUBLISHED)
+                        .eq(CourseBase::getCourseStatus, CourseStatus.PUBLISHED.getCode())
         );
         if (base == null) {
             throw new BusinessException(404, "课程不存在或未发布");
@@ -84,6 +88,31 @@ public class PublicCourseServiceImpl implements PublicCourseService {
             vo.setPhone(market.getPhone());
             vo.setValidDays(market.getValidDays());
         }
+        // 解析多封面并生成预签名URL
+        String coverPics = base.getCoverPics();
+        if (coverPics != null && !coverPics.isBlank()) {
+            try {
+                ObjectMapper om = new ObjectMapper();
+                List<String> arr = om.readValue(coverPics, new TypeReference<List<String>>() {});
+                List<String> urls = new ArrayList<>();
+                for (String p : arr) {
+                    if (p != null && p.startsWith("media:")) {
+                        String fileId = p.substring(6);
+                        try {
+                            String url = mediaUploadService.getFileInfo(fileId).getUrl();
+                            if (url != null) urls.add(url);
+                        } catch (Exception ignored) {}
+                    }
+                }
+                vo.setCoverPicUrls(urls);
+            } catch (Exception ignored) {}
+        } else if (base.getPic() != null && base.getPic().startsWith("media:")) {
+            try {
+                String fileId = base.getPic().substring(6);
+                String url = mediaUploadService.getFileInfo(fileId).getUrl();
+                if (url != null) vo.setCoverPicUrls(List.of(url));
+            } catch (Exception ignored) {}
+        }
         return vo;
     }
 
@@ -92,7 +121,7 @@ public class PublicCourseServiceImpl implements PublicCourseService {
         CourseBase base = courseBaseMapper.selectOne(
                 new LambdaQueryWrapper<CourseBase>()
                         .eq(CourseBase::getId, courseId)
-                        .eq(CourseBase::getPublishStatus, PUBLISHED)
+                        .eq(CourseBase::getCourseStatus, CourseStatus.PUBLISHED.getCode())
         );
         if (base == null) {
             throw new BusinessException(404, "课程不存在或未发布");

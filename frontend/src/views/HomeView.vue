@@ -117,7 +117,7 @@ onMounted(() => {
           <div class="banner-content">
             <h1 class="banner-title">{{ b.title }}</h1>
             <p class="banner-subtitle">{{ b.subtitle }}</p>
-            <RouterLink :to="'/courses'" class="banner-cta">{{ b.cta }}</RouterLink>
+            <RouterLink :to="'/courses/free'" class="banner-cta">{{ b.cta }}</RouterLink>
           </div>
         </div>
       </div>
@@ -192,7 +192,7 @@ onMounted(() => {
           <RouterLink
             v-for="cat in categoryTree.slice(0, 8)"
             :key="cat.id"
-            :to="`/courses?mt=${cat.id}`"
+            :to="`/courses/free?mt=${cat.id}`"
             class="category-card"
           >
             <span class="category-name">{{ cat.name }}</span>
@@ -233,7 +233,7 @@ onMounted(() => {
       <div class="container cta-inner">
         <h2 class="cta-title">开启你的学习之旅</h2>
         <p class="cta-desc">海量课程等你探索，投资自己，收获未来</p>
-        <RouterLink to="/courses" class="btn btn-cta">立即开始学习</RouterLink>
+        <RouterLink to="/courses/free" class="btn btn-cta">立即开始学习</RouterLink>
       </div>
     </section>
   </div>

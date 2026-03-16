@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -27,14 +28,18 @@ public class CourseMarketDTO {
     @Schema(description = "原价")
     private Float originalPrice;
 
+    @NotBlank(message = "咨询QQ不能为空")
     @Size(max = 32, message = "咨询QQ不能超过32字符")
     @Schema(description = "咨询QQ")
     private String qq;
 
+    @NotBlank(message = "微信不能为空")
     @Size(max = 64, message = "微信不能超过64字符")
     @Schema(description = "微信")
     private String wechat;
 
+    @NotBlank(message = "手机号不能为空")
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号需为11位，1开头，第二位3-9")
     @Size(max = 32, message = "电话不能超过32字符")
     @Schema(description = "电话")
     private String phone;

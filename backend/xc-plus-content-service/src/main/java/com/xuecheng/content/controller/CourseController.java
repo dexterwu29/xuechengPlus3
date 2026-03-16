@@ -11,12 +11,15 @@ import com.xuecheng.content.model.vo.CourseBaseVO;
 import com.xuecheng.content.model.vo.CourseDetailVO;
 import com.xuecheng.content.model.vo.PageResult;
 import com.xuecheng.content.model.vo.TeachplanTreeVO;
+import com.xuecheng.content.security.LoginUser;
 import com.xuecheng.content.service.CourseBaseService;
 import com.xuecheng.content.service.TeachplanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +44,7 @@ public class CourseController {
         PageParams params = new PageParams(body.getPageNo(), body.getPageSize());
         CourseQueryDTO queryDTO = new CourseQueryDTO();
         queryDTO.setCourseName(body.getCourseName());
-        queryDTO.setAuditStatus(body.getAuditStatus());
-        queryDTO.setPublishStatus(body.getPublishStatus());
+        queryDTO.setCourseStatus(body.getCourseStatus());
         queryDTO.setMt(body.getMt());
         queryDTO.setSt(body.getSt());
         PageResult<CourseBaseVO> result = courseBaseService.pageQuery(params, queryDTO);
@@ -55,15 +57,13 @@ public class CourseController {
             @RequestParam(defaultValue = "1") Integer pageNo,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String courseName,
-            @RequestParam(required = false) String auditStatus,
-            @RequestParam(required = false) String publishStatus,
+            @RequestParam(required = false) String courseStatus,
             @RequestParam(required = false) String mt,
             @RequestParam(required = false) String st) {
         PageParams params = new PageParams(pageNo, pageSize);
         CourseQueryDTO queryDTO = new CourseQueryDTO();
         queryDTO.setCourseName(courseName);
-        queryDTO.setAuditStatus(auditStatus);
-        queryDTO.setPublishStatus(publishStatus);
+        queryDTO.setCourseStatus(courseStatus);
         queryDTO.setMt(mt);
         queryDTO.setSt(st);
         PageResult<CourseBaseVO> result = courseBaseService.pageQuery(params, queryDTO);
@@ -113,10 +113,16 @@ public class CourseController {
         return RestResponse.success(planId);
     }
 
-    @Operation(summary = "提交审核（教师，草稿->待审核）")
+    @Operation(summary = "提交审核（教师草稿->待审核；超级管理员直接发布）")
     @PostMapping("/{id}/submit")
-    public RestResponse<Void> submitCourse(@PathVariable Long id) {
-        courseBaseService.submit(id);
+    public RestResponse<Void> submitCourse(
+            @PathVariable Long id,
+            @AuthenticationPrincipal LoginUser user) {
+        if (user != null && user.isSuperAdmin()) {
+            courseBaseService.submitAndPublish(id);
+        } else {
+            courseBaseService.submit(id);
+        }
         return RestResponse.success();
     }
 
@@ -129,8 +135,9 @@ public class CourseController {
         return RestResponse.success();
     }
 
-    @Operation(summary = "发布课程")
+    @Operation(summary = "发布课程（审核通过，仅 super_admin）")
     @PostMapping("/{id}/publish")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public RestResponse<Void> publishCourse(@PathVariable Long id) {
         courseBaseService.publish(id);
         return RestResponse.success();

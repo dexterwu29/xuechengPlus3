@@ -36,12 +36,14 @@ public class CourseBaseVO {
     private String description;
     @Schema(description = "课程图片")
     private String pic;
+    @Schema(description = "封面图fileId数组JSON，最多3个")
+    private String coverPics;
+    @Schema(description = "默认封面索引0-2")
+    private Integer defaultCoverIndex;
     @Schema(description = "创建时间（东八区）")
     private LocalDateTime createTime;
     @Schema(description = "更新时间（东八区）")
     private LocalDateTime updateTime;
-    @Schema(description = "审核状态：202001未通过 202002未提交 202003已提交 202004通过")
-    private String auditStatus;
-    @Schema(description = "发布状态：203001未发布 203002已发布 203003下线")
-    private String publishStatus;
+    @Schema(description = "课程状态：000草稿 100待审核 111已发布 112已下架")
+    private String courseStatus;
 }

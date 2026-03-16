@@ -21,18 +21,21 @@ import {
 const CHUNK_SIZE = 5 * 1024 * 1024 // 5MB
 const SIMPLE_LIMIT = 5 * 1024 * 1024 // 5MB
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     accept?: string
     maxCount?: number
     listType?: 'text' | 'picture' | 'picture-card'
     tip?: string
+    /** 单文件最大字节数，超出则上传前拦截（如封面上传 2MB） */
+    maxSize?: number
   }>(),
   {
     accept: 'image/*,video/*,.mp4,.pdf,.doc,.docx',
     maxCount: 1,
     listType: 'picture-card',
     tip: '支持图片、视频、文档，单文件不超过500MB',
+    maxSize: 0,
   }
 )
 
@@ -54,7 +57,11 @@ async function uploadByChunk(file: File): Promise<string> {
   const { exists, fileId } = await checkByMd5(fileMd5)
   if (exists && fileId) return fileId
 
-  const uploadId = await initChunkUpload(fileMd5, file.name, file.size, CHUNK_SIZE)
+  const initRes = await initChunkUpload(fileMd5, file.name, file.size, CHUNK_SIZE)
+  if (initRes.instant && initRes.fileId) return initRes.fileId
+
+  const uploadId = initRes.uploadId ?? ''
+  if (!uploadId) throw new Error('初始化失败')
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
   const uploaded = await getUploadStatus(uploadId)
 
@@ -72,6 +79,11 @@ async function uploadByChunk(file: File): Promise<string> {
 
 async function handleUpload(options: { file: File }) {
   const { file } = options
+  if (props.maxSize && file.size > props.maxSize) {
+    const mb = (props.maxSize / 1024 / 1024).toFixed(1)
+    message.error(`单张图片不超过 ${mb}MB`)
+    return
+  }
   uploading.value = true
   percent.value = 0
   try {
